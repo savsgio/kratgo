@@ -32,7 +32,51 @@ make install
 
 The binary file will install in `/usr/local/bin/kratgo` and configuration file in `/etc/kratgo/kratgo.conf.yml`
 
-## Developers
+### Cache invalidation
+
+The cache invalidation is available via API. The API's address is configured in `invalidator` section of the configuration file.
+
+This API only accepts `POST` requests with a `json` in request's body, under the path `/invalidate/`.
+
+Ex: `http://localhost:6082/invalidate/`
+
+There are three options to invalidate:
+
+- By host:
+
+```json
+{
+	"action": "delete",
+	"host": "www.example.com"
+}
+```
+
+ - By path:
+
+```json
+{
+	"action": "delete",
+	"path": "/news/"
+}
+```
+
+- By header:
+
+```json
+{
+	"action": "delete",
+	"header": {
+		"key": "Content-Type",
+		"value": "text/plain; charset=utf-8"
+	}
+}
+```
+
+*The `action` field always be equal to `delete`.*
+
+All invalidations will process by workers in Kratgo. You can configure the maximum available workers in the configuration.
+
+### Developers
 
 Copy configuration file `./config/kratgo.conf.yml` to `./config/kratgo-dev.conf.yml`, and customize it.
 
