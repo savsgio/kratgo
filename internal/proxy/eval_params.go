@@ -10,11 +10,11 @@ var evalParamsPool = sync.Pool{
 	},
 }
 
-func acquireEvalCtxParams() *evalParams {
+func acquireEvalParams() *evalParams {
 	return evalParamsPool.Get().(*evalParams)
 }
 
-func releaseEvalCtxParams(ecp *evalParams) {
+func releaseEvalParams(ecp *evalParams) {
 	ecp.reset()
 	evalParamsPool.Put(ecp)
 }

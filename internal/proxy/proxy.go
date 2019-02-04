@@ -77,7 +77,7 @@ func New(cfg config.Config) (*Proxy, error) {
 		New: func() interface{} {
 			return &proxyTools{
 				fetcher: acquireFetcher(),
-				params:  acquireEvalCtxParams(),
+				params:  acquireEvalParams(),
 				entry:   cache.AcquireEntry(),
 			}
 		},

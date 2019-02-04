@@ -2,7 +2,7 @@
 #   KRATGO CONFIGURATION
 ###########################
 
-# IMPORTANT: Be careful the tabulation indentation
+# IMPORTANT: Be careful with the tabulation indentation
 
 # --- Variables ---
 
@@ -48,7 +48,7 @@ cache:
 
 # --- Invalidator ---
 # addr: IP and Port of invalidation api
-# maxWorkers: Maximun workers to execute invalidations
+# maxWorkers: Maximum workers to execute invalidations
 
 invalidator:
   addr: 0.0.0.0:6082
@@ -66,7 +66,7 @@ invalidator:
 #
 #     unset: Configuration to UNSET headers from response (Optional)
 #       - name: Header name
-#         if: Condition to set this header (Optional)
+#         if: Condition to unset this header (Optional)
 #
 # nocache: Conditions to not save in cache the backend response (Optional)
 
