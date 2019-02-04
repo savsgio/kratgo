@@ -36,14 +36,14 @@ type Invalidator struct {
 
 // Header ...
 type Header struct {
-	Key   string
-	Value string
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 // Entry ...
 type Entry struct {
-	Action string
-	Host   string
-	Path   string
-	Header Header
+	Action string `json:"action"`
+	Host   string `json:"host"`
+	Path   string `json:"path"`
+	Header Header `json:"header"`
 }
