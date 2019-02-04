@@ -60,11 +60,7 @@ func (i *Invalidator) invalidateByHeader(cacheKey, headerKey, headerValue string
 		}
 	}
 
-	if err := i.cache.Set(cacheKey, entry); err != nil {
-		return err
-	}
-
-	return nil
+	return i.cache.Set(cacheKey, entry)
 }
 
 func (i *Invalidator) waitAvailableWorkers() {
