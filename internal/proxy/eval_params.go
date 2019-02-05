@@ -14,26 +14,26 @@ func acquireEvalParams() *evalParams {
 	return evalParamsPool.Get().(*evalParams)
 }
 
-func releaseEvalParams(ecp *evalParams) {
-	ecp.reset()
-	evalParamsPool.Put(ecp)
+func releaseEvalParams(ep *evalParams) {
+	ep.reset()
+	evalParamsPool.Put(ep)
 }
 
-func (ecp *evalParams) set(k string, v interface{}) {
-	ecp.p[k] = v
+func (ep *evalParams) set(k string, v interface{}) {
+	ep.p[k] = v
 }
 
-func (ecp *evalParams) get(k string) (interface{}, bool) {
-	v, ok := ecp.p[k]
+func (ep *evalParams) get(k string) (interface{}, bool) {
+	v, ok := ep.p[k]
 	return v, ok
 }
 
-func (ecp *evalParams) del(k string) {
-	delete(ecp.p, k)
+func (ep *evalParams) del(k string) {
+	delete(ep.p, k)
 }
 
-func (ecp *evalParams) reset() {
-	for k := range ecp.p {
-		ecp.del(k)
+func (ep *evalParams) reset() {
+	for k := range ep.p {
+		ep.del(k)
 	}
 }
