@@ -1,9 +1,9 @@
 package invalidator
 
 import (
-	"encoding/json"
 	"fmt"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/savsgio/gotils"
 	"github.com/valyala/fasthttp"
 )
@@ -31,7 +31,7 @@ func (i *Invalidator) httpHandler(ctx *fasthttp.RequestCtx) {
 			i.log.Debugf("Invalidation received: %s", body)
 		}
 
-		err := json.Unmarshal(body, entry)
+		err := jsoniter.Unmarshal(body, entry)
 		if err != nil {
 			ctx.Error(err.Error(), fasthttp.StatusBadRequest)
 			ReleaseEntry(entry)
