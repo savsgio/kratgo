@@ -11,7 +11,6 @@ import (
 	"github.com/savsgio/kratgo/internal/proxy/config"
 
 	logger "github.com/savsgio/go-logger"
-	"github.com/savsgio/gotils"
 	"github.com/savsgio/govaluate/v3"
 	"github.com/valyala/fasthttp"
 )
@@ -170,33 +169,34 @@ func (p *Proxy) parseHeadersRules(action string, headers []config.Headers) error
 	return nil
 }
 
-func (p *Proxy) saveBackendResponse(cacheKey []byte, path string, resp *fasthttp.Response, entry *cache.Entry) error {
-	r := entry.Response[path]
-	r.Body = resp.Body()
-	if r.Headers == nil {
-		r.Headers = make(cache.ResponseHeaders)
-	}
+func (p *Proxy) saveBackendResponse(cacheKey, path []byte, resp *fasthttp.Response, entry *cache.Entry) error {
+	r := cache.AcquireResponse()
+
+	r.Path = append(r.Path, path...)
+	r.Body = append(r.Body, resp.Body()...)
 	resp.Header.VisitAll(func(k, v []byte) {
-		r.Headers[gotils.B2S(k)] = v
+		r.SetHeader(k, v)
 	})
 
-	entry.Response[path] = r
+	entry.SetResponse(*r)
 
 	if err := p.cache.SetBytes(cacheKey, entry); err != nil {
 		return fmt.Errorf("Could not save response in cache for key '%s': %v", cacheKey, err)
 	}
 
+	cache.ReleaseResponse(r)
+
 	return nil
 }
 
-func (p *Proxy) fetchFromBackend(cacheKey []byte, path string, ctx *fasthttp.RequestCtx, pt *proxyTools) error {
+func (p *Proxy) fetchFromBackend(cacheKey, path []byte, ctx *fasthttp.RequestCtx, pt *proxyTools) error {
 	if p.log.DebugEnabled() {
 		p.log.Debugf("%s - %s", ctx.Method(), ctx.Path())
 	}
 
 	cloneHeaders(&pt.httpClient.req.Header, &ctx.Request.Header)
 	pt.httpClient.setMethodBytes(ctx.Method())
-	pt.httpClient.setRequestURI(path)
+	pt.httpClient.setRequestURIBytes(path)
 
 	if err := pt.httpClient.do(p.httpClient); err != nil {
 		return fmt.Errorf("Could not fetch response from backend: %v", err)
@@ -230,7 +230,7 @@ func (p *Proxy) fetchFromBackend(cacheKey []byte, path string, ctx *fasthttp.Req
 func (p *Proxy) handler(ctx *fasthttp.RequestCtx) {
 	pt := p.acquireTools()
 
-	path := gotils.B2S(ctx.URI().PathOriginal())
+	path := ctx.URI().PathOriginal()
 	cacheKey := ctx.Host()
 
 	if noCache, err := checkIfNoCache(&ctx.Request, &ctx.Response, p.nocacheRules, pt.params); err != nil {
@@ -242,10 +242,10 @@ func (p *Proxy) handler(ctx *fasthttp.RequestCtx) {
 			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
 			p.log.Errorf("Could not get data from cache with key '%s': %v", cacheKey, err)
 
-		} else if r, ok := pt.entry.Response[path]; ok {
+		} else if r := pt.entry.GetResponse(path); r != nil {
 			ctx.SetBody(r.Body)
-			for k, v := range r.Headers {
-				ctx.Response.Header.SetCanonical(gotils.S2B(k), v)
+			for _, h := range r.Headers {
+				ctx.Response.Header.SetCanonical(h.Key, h.Value)
 			}
 
 			p.releaseTools(pt)

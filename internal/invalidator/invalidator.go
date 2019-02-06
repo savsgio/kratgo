@@ -43,9 +43,9 @@ func (i *Invalidator) invalidateByHost(cacheKey string) error {
 }
 
 func (i *Invalidator) invalidateByPath(cacheKey, path string, entry *cache.Entry) error {
-	for entryPath := range entry.Response {
-		if path == entryPath {
-			delete(entry.Response, path)
+	for _, resp := range entry.Responses {
+		if path == gotils.B2S(resp.Path) {
+			entry.DelResponse(resp.Path)
 			return i.cache.Set(cacheKey, entry)
 		}
 	}
@@ -54,9 +54,11 @@ func (i *Invalidator) invalidateByPath(cacheKey, path string, entry *cache.Entry
 }
 
 func (i *Invalidator) invalidateByHeader(cacheKey, headerKey, headerValue string, entry *cache.Entry) error {
-	for path, response := range entry.Response {
-		if v, ok := response.Headers[headerKey]; ok && gotils.B2S(v) == headerValue {
-			delete(entry.Response, path)
+	for _, resp := range entry.Responses {
+		for _, h := range resp.Headers {
+			if gotils.B2S(h.Key) != headerKey && gotils.B2S(h.Value) == headerValue {
+				entry.DelResponse(resp.Path)
+			}
 		}
 	}
 

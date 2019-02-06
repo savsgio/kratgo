@@ -39,8 +39,8 @@ func (hc *httpClient) setMethodBytes(method []byte) {
 	hc.req.Header.SetMethodBytes(method)
 }
 
-func (hc *httpClient) setRequestURI(uri string) {
-	hc.req.SetRequestURI(uri)
+func (hc *httpClient) setRequestURIBytes(uri []byte) {
+	hc.req.SetRequestURIBytes(uri)
 }
 
 func (hc *httpClient) copyReqHeaderTo(h *fasthttp.RequestHeader) {

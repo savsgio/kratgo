@@ -3,15 +3,19 @@ package cache
 //go:generate msgp
 
 // ResponseHeaders ...
-type ResponseHeaders map[string][]byte
+type ResponseHeaders struct {
+	Key   []byte
+	Value []byte
+}
 
 // Response ...
-type Response map[string]struct {
+type Response struct {
+	Path    []byte
 	Body    []byte
-	Headers ResponseHeaders
+	Headers []ResponseHeaders
 }
 
 //Entry ...
 type Entry struct {
-	Response Response
+	Responses []Response
 }
