@@ -22,3 +22,6 @@ bin/
 
 # Develelop config file
 config/kratgo-dev.conf.yml
+
+# Profiling files
+**/*.prof

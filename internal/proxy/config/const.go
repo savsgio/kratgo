@@ -10,29 +10,32 @@ const configReqHeaderVar = "$(req.header::<NAME>)"
 const configRespHeaderVar = "$(resp.header::<NAME>)"
 const configCookieVar = "$(cookie::<NAME>)"
 
+// EvalVarPrefix ...
+const EvalVarPrefix = "Krat"
+
 // EvalVersionVar ...
-const EvalVersionVar = "KratVERSION"
+const EvalVersionVar = EvalVarPrefix + "VERSION"
 
 // EvalMethodVar ...
-const EvalMethodVar = "KratMETHOD"
+const EvalMethodVar = EvalVarPrefix + "METHOD"
 
 // EvalHostVar ...
-const EvalHostVar = "KratHOST"
+const EvalHostVar = EvalVarPrefix + "HOST"
 
 // EvalPathVar ...
-const EvalPathVar = "KratPATH"
+const EvalPathVar = EvalVarPrefix + "PATH"
 
 // EvalContentTypeVar ...
-const EvalContentTypeVar = "KratCONTENTTYPE"
+const EvalContentTypeVar = EvalVarPrefix + "CONTENTTYPE"
 
 // EvalStatusCodeVar ...
-const EvalStatusCodeVar = "KratSTATUSCODE"
+const EvalStatusCodeVar = EvalVarPrefix + "STATUSCODE"
 
 // EvalReqHeaderVar ...
-const EvalReqHeaderVar = "KratREQHEADER"
+const EvalReqHeaderVar = EvalVarPrefix + "REQHEADER"
 
 // EvalRespHeaderVar ...
-const EvalRespHeaderVar = "KratRESPHEADER"
+const EvalRespHeaderVar = EvalVarPrefix + "RESPHEADER"
 
 // EvalCookieVar ...
-const EvalCookieVar = "KratCOOKIE"
+const EvalCookieVar = EvalVarPrefix + "COOKIE"

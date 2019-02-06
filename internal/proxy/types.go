@@ -16,14 +16,14 @@ import (
 // Proxy ...
 type Proxy struct {
 	server      *fasthttp.Server
-	hostClient  *fasthttp.HostClient
 	cache       *cache.Cache
 	invalidator *invalidator.Invalidator
 
-	nocacheRules []Rule
-	headersRules []HeaderRule
-
+	httpClient fetcher
 	httpScheme string
+
+	nocacheRules []rule
+	headersRules []headerRule
 
 	log     *logger.Logger
 	logFile *os.File
@@ -34,21 +34,20 @@ type Proxy struct {
 }
 
 type proxyTools struct {
-	fetcher *fetcher
-	params  *evalParams
-	entry   *cache.Entry
+	httpClient *httpClient
+	params     *evalParams
+	entry      *cache.Entry
 }
 
-type evalParams struct {
-	p map[string]interface{}
-}
-
-type fetcher struct {
+type httpClient struct {
 	req  *fasthttp.Request
 	resp *fasthttp.Response
 
 	executeHeaderRule bool
-	redirectsCookies  [][]byte
+}
+
+type evalParams struct {
+	p map[string]interface{}
 }
 
 type ruleParam struct {
@@ -61,16 +60,21 @@ type headerValue struct {
 	subKey string
 }
 
-// Rule ...
-type Rule struct {
+type rule struct {
 	expr   *govaluate.EvaluableExpression
 	params []ruleParam
 }
 
-// HeaderRule ...
-type HeaderRule struct {
+type headerRule struct {
+	rule
+
 	action string
 	name   string
 	value  headerValue
-	Rule
+}
+
+// ###### INTERFACES ######
+
+type fetcher interface {
+	Do(req *fasthttp.Request, resp *fasthttp.Response) error
 }

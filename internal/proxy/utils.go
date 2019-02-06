@@ -139,7 +139,7 @@ func getEvalValue(req *fasthttp.Request, resp *fasthttp.Response, name, key stri
 	return value
 }
 
-func checkIfNoCache(req *fasthttp.Request, resp *fasthttp.Response, rules []Rule, params *evalParams) (bool, error) {
+func checkIfNoCache(req *fasthttp.Request, resp *fasthttp.Response, rules []rule, params *evalParams) (bool, error) {
 	for _, r := range rules {
 		params.reset()
 

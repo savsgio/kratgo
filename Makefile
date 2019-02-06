@@ -47,7 +47,7 @@ test:
 	go test -v -race -cover ./...
 
 bench:
-	go test -bench=. -benchmem ./...
+	go test -cpuprofile=cpu.prof -bench=. -benchmem $(INTERNAL_DIR)/proxy
 
 run: build
 	$(BIN_DIR)/$(BIN_FILE) -config ./config/kratgo-dev.conf.yml

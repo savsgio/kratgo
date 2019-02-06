@@ -66,9 +66,9 @@ func New(cfg config.Config) (*Proxy, error) {
 	})
 
 	p.server = s
-	p.hostClient = hc
 	p.cache = c
 	p.invalidator = i
+	p.httpClient = hc
 	p.httpScheme = "http"
 	p.log = log
 	p.cfg = cfg
@@ -76,9 +76,9 @@ func New(cfg config.Config) (*Proxy, error) {
 	p.tools = sync.Pool{
 		New: func() interface{} {
 			return &proxyTools{
-				fetcher: acquireFetcher(),
-				params:  acquireEvalParams(),
-				entry:   cache.AcquireEntry(),
+				httpClient: acquireHTTPClient(),
+				params:     acquireEvalParams(),
+				entry:      cache.AcquireEntry(),
 			}
 		},
 	}
@@ -103,7 +103,7 @@ func (p *Proxy) acquireTools() *proxyTools {
 }
 
 func (p *Proxy) releaseTools(pt *proxyTools) {
-	pt.fetcher.reset()
+	pt.httpClient.reset()
 	pt.params.reset()
 	pt.entry.Reset()
 
@@ -125,12 +125,12 @@ func (p *Proxy) newEvaluableExpression(rule string) (*govaluate.EvaluableExpress
 }
 
 func (p *Proxy) parseNocacheRules() error {
-	for _, rule := range p.cfg.Proxy.Nocache {
-		r := Rule{}
+	for _, ncRule := range p.cfg.Proxy.Nocache {
+		r := rule{}
 
-		expr, params, err := p.newEvaluableExpression(rule)
+		expr, params, err := p.newEvaluableExpression(ncRule)
 		if err != nil {
-			return fmt.Errorf("Could not get the evaluable expression for rule '%s': %v", rule, err)
+			return fmt.Errorf("Could not get the evaluable expression for rule '%s': %v", ncRule, err)
 		}
 		r.expr = expr
 		r.params = append(r.params, params...)
@@ -143,7 +143,7 @@ func (p *Proxy) parseNocacheRules() error {
 
 func (p *Proxy) parseHeadersRules(action string, headers []config.Headers) error {
 	for _, h := range headers {
-		r := HeaderRule{action: action, name: h.Name}
+		r := headerRule{action: action, name: h.Name}
 
 		if h.When != "" {
 			expr, params, err := p.newEvaluableExpression(h.When)
@@ -194,37 +194,35 @@ func (p *Proxy) fetchFromBackend(cacheKey []byte, path string, ctx *fasthttp.Req
 		p.log.Debugf("%s - %s", ctx.Method(), ctx.Path())
 	}
 
-	cloneHeaders(&pt.fetcher.req.Header, &ctx.Request.Header)
-	pt.fetcher.req.Header.SetMethodBytes(ctx.Method())
-	pt.fetcher.req.SetRequestURI(path)
+	cloneHeaders(&pt.httpClient.req.Header, &ctx.Request.Header)
+	pt.httpClient.setMethodBytes(ctx.Method())
+	pt.httpClient.setRequestURI(path)
 
-	if err := pt.fetcher.Do(p.hostClient); err != nil {
+	if err := pt.httpClient.do(p.httpClient); err != nil {
 		return fmt.Errorf("Could not fetch response from backend: %v", err)
 
 	}
 
-	pt.fetcher.processHeaderRules(p.headersRules, pt.params)
-	pt.fetcher.req.Header.CopyTo(&ctx.Request.Header)
-	pt.fetcher.resp.Header.CopyTo(&ctx.Response.Header)
+	pt.httpClient.processHeaderRules(p.headersRules, pt.params)
+	pt.httpClient.copyReqHeaderTo(&ctx.Request.Header)
+	pt.httpClient.copyRespHeaderTo(&ctx.Response.Header)
 
-	location := pt.fetcher.resp.Header.Peek(headerLocation)
+	location := pt.httpClient.respHeaderPeek(headerLocation)
 	if len(location) > 0 {
 		return nil
 	}
 
-	noCache, err := checkIfNoCache(pt.fetcher.req, pt.fetcher.resp, p.nocacheRules, pt.params)
+	noCache, err := checkIfNoCache(pt.httpClient.req, pt.httpClient.resp, p.nocacheRules, pt.params)
 	if err != nil {
 		return err
 	}
 
-	ctx.SetStatusCode(pt.fetcher.resp.StatusCode())
-	ctx.SetBody(pt.fetcher.resp.Body())
+	ctx.SetStatusCode(pt.httpClient.statusCode())
+	ctx.SetBody(pt.httpClient.body())
 
-	if noCache || pt.fetcher.resp.StatusCode() != fasthttp.StatusOK {
+	if noCache || ctx.Response.StatusCode() != fasthttp.StatusOK {
 		return nil
 	}
-
-	pt.fetcher.resp.Header.CopyTo(&ctx.Response.Header)
 
 	return p.saveBackendResponse(cacheKey, path, &ctx.Response, pt.entry)
 }
