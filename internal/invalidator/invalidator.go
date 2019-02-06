@@ -58,6 +58,7 @@ func (i *Invalidator) invalidateByHeader(cacheKey, headerKey, headerValue string
 		for _, h := range resp.Headers {
 			if gotils.B2S(h.Key) != headerKey && gotils.B2S(h.Value) == headerValue {
 				entry.DelResponse(resp.Path)
+				break
 			}
 		}
 	}
