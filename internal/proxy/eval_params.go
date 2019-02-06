@@ -28,6 +28,10 @@ func (ep *evalParams) get(k string) (interface{}, bool) {
 	return v, ok
 }
 
+func (ep *evalParams) all() map[string]interface{} {
+	return ep.p
+}
+
 func (ep *evalParams) del(k string) {
 	delete(ep.p, k)
 }

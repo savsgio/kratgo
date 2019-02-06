@@ -147,7 +147,7 @@ func checkIfNoCache(req *fasthttp.Request, resp *fasthttp.Response, rules []rule
 			params.set(p.name, getEvalValue(req, resp, p.name, p.subKey))
 		}
 
-		result, err := r.expr.Evaluate(params.p)
+		result, err := r.expr.Evaluate(params.all())
 		if err != nil {
 			return false, fmt.Errorf("Invalid nocache rule: %v", err)
 		}

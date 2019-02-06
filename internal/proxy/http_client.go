@@ -74,7 +74,7 @@ func (hc *httpClient) processHeaderRules(rules []headerRule, params *evalParams)
 				params.set(p.name, getEvalValue(hc.req, hc.resp, p.name, p.subKey))
 			}
 
-			result, err := r.expr.Evaluate(params.p)
+			result, err := r.expr.Evaluate(params.all())
 			if err != nil {
 				return err
 			}
