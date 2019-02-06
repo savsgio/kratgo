@@ -15,17 +15,6 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-// go func() {
-// 	time.Sleep(10 * time.Second)
-// 	println("Invalidando la cache para crowne")
-// 	invalidator.Add(&invalidator.Entry{
-// 		Header: invalidator.Header{
-// 			Key:   []byte("Theme"),
-// 			Value: []byte("hans"),
-// 		},
-// 	})
-// }()
-
 // New ...
 func New(cfg config.Config) (*Proxy, error) {
 	p := new(Proxy)
@@ -114,6 +103,9 @@ func (p *Proxy) newEvaluableExpression(rule string) (*govaluate.EvaluableExpress
 
 	for config.ConfigVarRegex.MatchString(rule) {
 		configKey, evalKey, evalSubKey := config.ParseConfigKeys(rule)
+		if configKey == "" {
+			return nil, nil, fmt.Errorf("Invalid condition: %s", rule)
+		}
 
 		rule = strings.Replace(rule, configKey, evalKey, -1)
 		params = append(params, ruleParam{name: evalKey, subKey: evalSubKey})
