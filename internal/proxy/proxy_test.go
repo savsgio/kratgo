@@ -59,7 +59,7 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 			},
 			want: want{
 				strExpr: fmt.Sprintf("%s == '%s'", config.EvalVersionVar, version),
-				params:  []ruleParam{ruleParam{name: config.EvalVersionVar, subKey: ""}},
+				params:  []ruleParam{{name: config.EvalVersionVar, subKey: ""}},
 				err:     false,
 			},
 		},
@@ -70,7 +70,7 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 			},
 			want: want{
 				strExpr: fmt.Sprintf("%s == '%s'", config.EvalMethodVar, "GET"),
-				params:  []ruleParam{ruleParam{name: config.EvalMethodVar, subKey: ""}},
+				params:  []ruleParam{{name: config.EvalMethodVar, subKey: ""}},
 				err:     false,
 			},
 		},
@@ -81,7 +81,7 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 			},
 			want: want{
 				strExpr: fmt.Sprintf("%s == '%s'", config.EvalHostVar, "www.kratgo.com"),
-				params:  []ruleParam{ruleParam{name: config.EvalHostVar, subKey: ""}},
+				params:  []ruleParam{{name: config.EvalHostVar, subKey: ""}},
 				err:     false,
 			},
 		},
@@ -92,7 +92,7 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 			},
 			want: want{
 				strExpr: fmt.Sprintf("%s == '%s'", config.EvalPathVar, "/es/"),
-				params:  []ruleParam{ruleParam{name: config.EvalPathVar, subKey: ""}},
+				params:  []ruleParam{{name: config.EvalPathVar, subKey: ""}},
 				err:     false,
 			},
 		},
@@ -103,7 +103,7 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 			},
 			want: want{
 				strExpr: fmt.Sprintf("%s == '%s'", config.EvalContentTypeVar, "text/html"),
-				params:  []ruleParam{ruleParam{name: config.EvalContentTypeVar, subKey: ""}},
+				params:  []ruleParam{{name: config.EvalContentTypeVar, subKey: ""}},
 				err:     false,
 			},
 		},
@@ -114,7 +114,7 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 			},
 			want: want{
 				strExpr: fmt.Sprintf("%s == '%s'", config.EvalStatusCodeVar, "200"),
-				params:  []ruleParam{ruleParam{name: config.EvalStatusCodeVar, subKey: ""}},
+				params:  []ruleParam{{name: config.EvalStatusCodeVar, subKey: ""}},
 				err:     false,
 			},
 		},
@@ -125,7 +125,7 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 			},
 			want: want{
 				regexExpr: regexp.MustCompile(fmt.Sprintf("%s([0-9]{2}) == '%s'", config.EvalReqHeaderVar, "Kratgo")),
-				params:    []ruleParam{ruleParam{name: config.EvalReqHeaderVar, subKey: "X-Data"}},
+				params:    []ruleParam{{name: config.EvalReqHeaderVar, subKey: "X-Data"}},
 				err:       false,
 			},
 		},
@@ -136,7 +136,7 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 			},
 			want: want{
 				regexExpr: regexp.MustCompile(fmt.Sprintf("%s([0-9]{2}) == '%s'", config.EvalRespHeaderVar, "Kratgo")),
-				params:    []ruleParam{ruleParam{name: config.EvalRespHeaderVar, subKey: "X-Resp-Data"}},
+				params:    []ruleParam{{name: config.EvalRespHeaderVar, subKey: "X-Resp-Data"}},
 				err:       false,
 			},
 		},
@@ -147,7 +147,7 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 			},
 			want: want{
 				regexExpr: regexp.MustCompile(fmt.Sprintf("%s([0-9]{2}) == '%s'", config.EvalCookieVar, "Kratgo")),
-				params:    []ruleParam{ruleParam{name: config.EvalCookieVar, subKey: "X-Cookie-Data"}},
+				params:    []ruleParam{{name: config.EvalCookieVar, subKey: "X-Cookie-Data"}},
 				err:       false,
 			},
 		},
@@ -159,8 +159,8 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 			want: want{
 				strExpr: fmt.Sprintf("%s == '%s' && %s != '%s'", config.EvalPathVar, "/kratgo", config.EvalMethodVar, "GET"),
 				params: []ruleParam{
-					ruleParam{name: config.EvalPathVar, subKey: ""},
-					ruleParam{name: config.EvalMethodVar, subKey: ""},
+					{name: config.EvalPathVar, subKey: ""},
+					{name: config.EvalMethodVar, subKey: ""},
 				},
 				err: false,
 			},
@@ -264,12 +264,12 @@ func TestProxy_parseHeadersRules(t *testing.T) {
 			args: args{
 				action: setHeaderAction,
 				rules: []config.Header{
-					config.Header{
+					{
 						Name:  "X-Data",
 						Value: "Kratgo",
 						When:  "$(path) == '/kratgo'",
 					},
-					config.Header{
+					{
 						Name:  "X-Data",
 						Value: "$(version)",
 					},
@@ -285,11 +285,11 @@ func TestProxy_parseHeadersRules(t *testing.T) {
 			args: args{
 				action: unsetHeaderAction,
 				rules: []config.Header{
-					config.Header{
+					{
 						Name: "X-Data",
 						When: "$(path) == '/kratgo'",
 					},
-					config.Header{
+					{
 						Name: "X-Data",
 					},
 				},

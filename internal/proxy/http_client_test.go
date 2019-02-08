@@ -157,27 +157,27 @@ func TestHTTPClient_processHeaderRules(t *testing.T) {
 	unsetName2 := "X-MyHeader"
 
 	setHeadersRulesConfig := []config.Header{
-		config.Header{
+		{
 			Name:  setName1,
 			Value: setValue1,
 			When:  setWhen1,
 		},
-		config.Header{
+		{
 			Name:  setName2,
 			Value: setValue2,
 		},
-		config.Header{
+		{
 			Name:  setName3,
 			Value: setValue3,
 			When:  setWhen3,
 		},
 	}
 	unsetHeadersRulesConfig := []config.Header{
-		config.Header{
+		{
 			Name: unsetName1,
 			When: unsetWhen1,
 		},
-		config.Header{
+		{
 			Name: unsetName2,
 		},
 	}
