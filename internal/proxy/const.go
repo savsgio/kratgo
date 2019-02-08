@@ -2,10 +2,10 @@ package proxy
 
 const version = "1.0.0"
 
-const maxRedirectsCount = 16
+const defaultLogOutput = "console"
 
-const scheme = "http"
-const schemeTLS = "https"
+const defaultHTTPScheme = "http"
+const httpSchemeTLS = "https"
 
 const headerLocation = "Location"
 const headerContentEncoding = "Content-Encoding"

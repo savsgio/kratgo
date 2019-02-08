@@ -27,12 +27,12 @@ type ProxyResponse struct {
 
 // ProxyResponseHeaders ...
 type ProxyResponseHeaders struct {
-	Set   []Headers `yaml:"set"`
-	Unset []Headers `yaml:"unset"`
+	Set   []Header `yaml:"set"`
+	Unset []Header `yaml:"unset"`
 }
 
-// Headers ...
-type Headers struct {
+// Header ...
+type Header struct {
 	Name  string `yaml:"name"`
 	Value string `yaml:"value"`
 	When  string `yaml:"if"`
@@ -40,7 +40,11 @@ type Headers struct {
 
 // Cache ...
 type Cache struct {
-	TTL time.Duration `yaml:"ttl"`
+	TTL              time.Duration `yaml:"ttl"`
+	CleanFrequency   time.Duration `yaml:"cleanFrequency"`
+	MaxEntries       int           `yaml:"maxEntries"`
+	MaxEntrySize     int           `yaml:"maxEntrySize"`
+	HardMaxCacheSize int           `yaml:"hardMaxCacheSize"`
 }
 
 // Invalidator ...

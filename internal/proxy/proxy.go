@@ -36,10 +36,20 @@ func New(cfg config.Config) (*Proxy, error) {
 		Addr: cfg.Proxy.BackendAddr,
 	}
 
+	cacheVerbose := cfg.LogLevel == logger.DEBUG
+	cacheCleanFrequency := cfg.Cache.CleanFrequency
+	if cacheCleanFrequency == 0 {
+		return nil, fmt.Errorf("Cache.CleanFrequency configuration must be greater than 0")
+	}
 	c, err := cache.New(cache.Config{
-		TTL:       cfg.Cache.TTL * time.Minute,
-		LogLevel:  cfg.LogLevel,
-		LogOutput: logOutput,
+		TTL:              cfg.Cache.TTL * time.Minute,
+		CleanFrequency:   cacheCleanFrequency * time.Minute,
+		MaxEntries:       cfg.Cache.MaxEntries,
+		MaxEntrySize:     cfg.Cache.MaxEntrySize,
+		HardMaxCacheSize: cfg.Cache.HardMaxCacheSize,
+		Verbose:          cacheVerbose,
+		LogLevel:         cfg.LogLevel,
+		LogOutput:        logOutput,
 	})
 	if err != nil {
 		return nil, err
@@ -57,7 +67,7 @@ func New(cfg config.Config) (*Proxy, error) {
 	p.cache = c
 	p.invalidator = i
 	p.httpClient = hc
-	p.httpScheme = "http"
+	p.httpScheme = defaultHTTPScheme
 	p.log = log
 	p.cfg = cfg
 
@@ -103,7 +113,7 @@ func (p *Proxy) newEvaluableExpression(rule string) (*govaluate.EvaluableExpress
 
 	for config.ConfigVarRegex.MatchString(rule) {
 		configKey, evalKey, evalSubKey := config.ParseConfigKeys(rule)
-		if configKey == "" {
+		if configKey == "" && evalKey == "" && evalSubKey == "" {
 			return nil, nil, fmt.Errorf("Invalid condition: %s", rule)
 		}
 
@@ -132,7 +142,7 @@ func (p *Proxy) parseNocacheRules() error {
 	return nil
 }
 
-func (p *Proxy) parseHeadersRules(action string, headers []config.Headers) error {
+func (p *Proxy) parseHeadersRules(action string, headers []config.Header) error {
 	for _, h := range headers {
 		r := headerRule{action: action, name: h.Name}
 
@@ -192,10 +202,11 @@ func (p *Proxy) fetchFromBackend(cacheKey, path []byte, ctx *fasthttp.RequestCtx
 
 	if err := pt.httpClient.do(p.httpClient); err != nil {
 		return fmt.Errorf("Could not fetch response from backend: %v", err)
-
 	}
 
-	pt.httpClient.processHeaderRules(p.headersRules, pt.params)
+	if err := pt.httpClient.processHeaderRules(p.headersRules, pt.params); err != nil {
+		return fmt.Errorf("Could not process headers rules: %v", err)
+	}
 	pt.httpClient.copyReqHeaderTo(&ctx.Request.Header)
 	pt.httpClient.copyRespHeaderTo(&ctx.Response.Header)
 

@@ -42,9 +42,17 @@ logOutput: /var/log/kratgo/kratgo.log
 
 # --- Cache ---
 # ttl: Cache expiration in minutes
+# cleanFrequency: Interval in minutes between removing expired entries (clean up)
+# maxEntries: Max number of entries in cache. Used only to calculate initial size for cache
+# maxEntrySize: Max size of entry in bytes
+# hardMaxCacheSize: Limit for cache size in MB (Default value is 0 which means unlimited size)
 
 cache:
   ttl: 10
+  cleanFrequency: 1
+  maxEntries: 600000
+  maxEntrySize: 500
+  hardMaxCacheSize: 0
 
 # --- Invalidator ---
 # addr: IP and Port of invalidation api

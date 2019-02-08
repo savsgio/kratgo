@@ -1,11 +1,14 @@
 package proxy
 
 import (
+	"bytes"
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/savsgio/kratgo/internal/cache"
 	"github.com/savsgio/kratgo/internal/proxy/config"
 	"github.com/valyala/fasthttp"
 )
@@ -17,7 +20,11 @@ func testConfig() config.Config {
 			BackendAddr: "localhost:9997",
 		},
 		Cache: config.Cache{
-			TTL: 30 * time.Second,
+			TTL:              10 * time.Second,
+			CleanFrequency:   5 * time.Second,
+			MaxEntries:       5,
+			MaxEntrySize:     20,
+			HardMaxCacheSize: 30,
 		},
 		Invalidator: config.Invalidator{
 			Addr:       "localhost:8001",
@@ -28,31 +35,16 @@ func testConfig() config.Config {
 	}
 }
 
-type mockHTTPClient struct{}
-
-func (mock *mockHTTPClient) Do(req *fasthttp.Request, resp *fasthttp.Response) error {
-	resp.SetBodyString("Kratgo Http Cache")
-	resp.Header.Set("X-Data", "Bench")
-	resp.SetStatusCode(200)
-
-	return nil
-}
-
 func TestProxy_newEvaluableExpression(t *testing.T) {
 	type args struct {
 		rule string
 	}
 
 	type want struct {
-		strExpr     string
-		regexExpr   *regexp.Regexp
-		totalParams int
-		err         bool
-	}
-
-	p, err := New(testConfig())
-	if err != nil {
-		panic(err)
+		strExpr   string
+		regexExpr *regexp.Regexp
+		params    []ruleParam
+		err       bool
 	}
 
 	tests := []struct {
@@ -66,9 +58,9 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 				rule: fmt.Sprintf("$(version) == '%s'", version),
 			},
 			want: want{
-				strExpr:     fmt.Sprintf("%s == '%s'", config.EvalVersionVar, version),
-				totalParams: 1,
-				err:         false,
+				strExpr: fmt.Sprintf("%s == '%s'", config.EvalVersionVar, version),
+				params:  []ruleParam{ruleParam{name: config.EvalVersionVar, subKey: ""}},
+				err:     false,
 			},
 		},
 		{
@@ -77,9 +69,9 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 				rule: fmt.Sprintf("$(method) == '%s'", "GET"),
 			},
 			want: want{
-				strExpr:     fmt.Sprintf("%s == '%s'", config.EvalMethodVar, "GET"),
-				totalParams: 1,
-				err:         false,
+				strExpr: fmt.Sprintf("%s == '%s'", config.EvalMethodVar, "GET"),
+				params:  []ruleParam{ruleParam{name: config.EvalMethodVar, subKey: ""}},
+				err:     false,
 			},
 		},
 		{
@@ -88,9 +80,9 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 				rule: fmt.Sprintf("$(host) == '%s'", "www.kratgo.com"),
 			},
 			want: want{
-				strExpr:     fmt.Sprintf("%s == '%s'", config.EvalHostVar, "www.kratgo.com"),
-				totalParams: 1,
-				err:         false,
+				strExpr: fmt.Sprintf("%s == '%s'", config.EvalHostVar, "www.kratgo.com"),
+				params:  []ruleParam{ruleParam{name: config.EvalHostVar, subKey: ""}},
+				err:     false,
 			},
 		},
 		{
@@ -99,9 +91,9 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 				rule: fmt.Sprintf("$(path) == '%s'", "/es/"),
 			},
 			want: want{
-				strExpr:     fmt.Sprintf("%s == '%s'", config.EvalPathVar, "/es/"),
-				totalParams: 1,
-				err:         false,
+				strExpr: fmt.Sprintf("%s == '%s'", config.EvalPathVar, "/es/"),
+				params:  []ruleParam{ruleParam{name: config.EvalPathVar, subKey: ""}},
+				err:     false,
 			},
 		},
 		{
@@ -110,9 +102,9 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 				rule: fmt.Sprintf("$(contentType) == '%s'", "text/html"),
 			},
 			want: want{
-				strExpr:     fmt.Sprintf("%s == '%s'", config.EvalContentTypeVar, "text/html"),
-				totalParams: 1,
-				err:         false,
+				strExpr: fmt.Sprintf("%s == '%s'", config.EvalContentTypeVar, "text/html"),
+				params:  []ruleParam{ruleParam{name: config.EvalContentTypeVar, subKey: ""}},
+				err:     false,
 			},
 		},
 		{
@@ -121,9 +113,9 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 				rule: fmt.Sprintf("$(statusCode) == '%s'", "200"),
 			},
 			want: want{
-				strExpr:     fmt.Sprintf("%s == '%s'", config.EvalStatusCodeVar, "200"),
-				totalParams: 1,
-				err:         false,
+				strExpr: fmt.Sprintf("%s == '%s'", config.EvalStatusCodeVar, "200"),
+				params:  []ruleParam{ruleParam{name: config.EvalStatusCodeVar, subKey: ""}},
+				err:     false,
 			},
 		},
 		{
@@ -132,31 +124,31 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 				rule: fmt.Sprintf("$(req.header::X-Data) == '%s'", "Kratgo"),
 			},
 			want: want{
-				regexExpr:   regexp.MustCompile(fmt.Sprintf("%s([0-9]{2}) == '%s'", config.EvalReqHeaderVar, "Kratgo")),
-				totalParams: 1,
-				err:         false,
+				regexExpr: regexp.MustCompile(fmt.Sprintf("%s([0-9]{2}) == '%s'", config.EvalReqHeaderVar, "Kratgo")),
+				params:    []ruleParam{ruleParam{name: config.EvalReqHeaderVar, subKey: "X-Data"}},
+				err:       false,
 			},
 		},
 		{
 			name: "resp.header::<NAME>",
 			args: args{
-				rule: fmt.Sprintf("$(resp.header::X-Data) == '%s'", "Kratgo"),
+				rule: fmt.Sprintf("$(resp.header::X-Resp-Data) == '%s'", "Kratgo"),
 			},
 			want: want{
-				regexExpr:   regexp.MustCompile(fmt.Sprintf("%s([0-9]{2}) == '%s'", config.EvalRespHeaderVar, "Kratgo")),
-				totalParams: 1,
-				err:         false,
+				regexExpr: regexp.MustCompile(fmt.Sprintf("%s([0-9]{2}) == '%s'", config.EvalRespHeaderVar, "Kratgo")),
+				params:    []ruleParam{ruleParam{name: config.EvalRespHeaderVar, subKey: "X-Resp-Data"}},
+				err:       false,
 			},
 		},
 		{
 			name: "cookie::<NAME>",
 			args: args{
-				rule: fmt.Sprintf("$(cookie::X-Data) == '%s'", "Kratgo"),
+				rule: fmt.Sprintf("$(cookie::X-Cookie-Data) == '%s'", "Kratgo"),
 			},
 			want: want{
-				regexExpr:   regexp.MustCompile(fmt.Sprintf("%s([0-9]{2}) == '%s'", config.EvalCookieVar, "Kratgo")),
-				totalParams: 1,
-				err:         false,
+				regexExpr: regexp.MustCompile(fmt.Sprintf("%s([0-9]{2}) == '%s'", config.EvalCookieVar, "Kratgo")),
+				params:    []ruleParam{ruleParam{name: config.EvalCookieVar, subKey: "X-Cookie-Data"}},
+				err:       false,
 			},
 		},
 		{
@@ -165,9 +157,12 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 				rule: fmt.Sprintf("$(path) == '%s' && $(method) != '%s'", "/kratgo", "GET"),
 			},
 			want: want{
-				strExpr:     fmt.Sprintf("%s == '%s' && %s != '%s'", config.EvalPathVar, "/kratgo", config.EvalMethodVar, "GET"),
-				totalParams: 2,
-				err:         false,
+				strExpr: fmt.Sprintf("%s == '%s' && %s != '%s'", config.EvalPathVar, "/kratgo", config.EvalMethodVar, "GET"),
+				params: []ruleParam{
+					ruleParam{name: config.EvalPathVar, subKey: ""},
+					ruleParam{name: config.EvalMethodVar, subKey: ""},
+				},
+				err: false,
 			},
 		},
 		{
@@ -180,6 +175,12 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 			},
 		},
 	}
+
+	p, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			expr, params, err := p.newEvaluableExpression(tt.args.rule)
@@ -200,8 +201,21 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 					}
 				}
 
-				if len(params) != tt.want.totalParams {
-					t.Errorf("Proxy.newEvaluableExpression() len(params) = '%d', want '%d'", len(params), tt.want.totalParams)
+				for _, ruleParam := range params {
+					for _, wantParam := range tt.want.params {
+						if tt.want.regexExpr != nil {
+							if strings.HasPrefix(ruleParam.name, wantParam.name) && wantParam.subKey == ruleParam.subKey {
+								goto next
+							}
+						} else {
+							if wantParam.name == ruleParam.name && wantParam.subKey == ruleParam.subKey {
+								goto next
+							}
+						}
+					}
+					t.Errorf("Proxy.newEvaluableExpression() unexpected parameter %v", ruleParam)
+
+				next:
 				}
 			}
 
@@ -209,12 +223,469 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 	}
 }
 
+func TestProxy_parseNocacheRules(t *testing.T) {
+	p, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.cfg.Proxy.Nocache = []string{
+		"$(req.header::X-Requested-With) == 'XMLHttpRequest'",
+		"$(host) == 'www.kratgo.es' || $(req.header::X-Data) != 'Kratgo'",
+	}
+
+	err = p.parseNocacheRules()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(p.cfg.Proxy.Nocache) != len(p.nocacheRules) {
+		t.Errorf("Proxy.parseNocacheRules() parsed %d rules, want %d", len(p.cfg.Proxy.Nocache), len(p.nocacheRules))
+	}
+}
+
+func TestProxy_parseHeadersRules(t *testing.T) {
+	type args struct {
+		action string
+		rules  []config.Header
+	}
+
+	type want struct {
+		action string
+		err    bool
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "Set",
+			args: args{
+				action: setHeaderAction,
+				rules: []config.Header{
+					config.Header{
+						Name:  "X-Data",
+						Value: "Kratgo",
+						When:  "$(path) == '/kratgo'",
+					},
+					config.Header{
+						Name:  "X-Data",
+						Value: "$(version)",
+					},
+				},
+			},
+			want: want{
+				action: setHeaderAction,
+				err:    false,
+			},
+		},
+		{
+			name: "Unset",
+			args: args{
+				action: unsetHeaderAction,
+				rules: []config.Header{
+					config.Header{
+						Name: "X-Data",
+						When: "$(path) == '/kratgo'",
+					},
+					config.Header{
+						Name: "X-Data",
+					},
+				},
+			},
+			want: want{
+				action: unsetHeaderAction,
+				err:    false,
+			},
+		},
+	}
+
+	p, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, tt := range tests {
+		p.headersRules = p.headersRules[:0]
+
+		t.Run(tt.name, func(t *testing.T) {
+			err = p.parseHeadersRules(tt.args.action, tt.args.rules)
+			if (tt.want.err && err == nil) || (!tt.want.err && err != nil) {
+				t.Fatalf("Proxy.parseHeadersRules() returns error '%v', want error '%v'", err, tt.want.err)
+			}
+
+			if !tt.want.err {
+				if len(tt.args.rules) != len(p.headersRules) {
+					t.Errorf("Proxy.parseHeadersRules() parsed %d rules, want %d", len(p.headersRules), len(tt.args.rules))
+				}
+
+				for i, pr := range p.headersRules {
+					if tt.want.action != pr.action {
+						t.Errorf("Proxy.parseHeadersRules() action == '%s', want '%s'", pr.action, tt.want.action)
+					}
+
+					configHeader := tt.args.rules[i]
+					if configHeader.When != "" && pr.expr == nil {
+						t.Errorf("Proxy.parseHeadersRules() Proxy.headersRules.When '%s' has not be parsed", configHeader.When)
+					}
+
+					if configHeader.Name != pr.name {
+						t.Errorf("Proxy.parseHeadersRules() action == '%s', want '%s'", pr.action, tt.want.action)
+					}
+
+					_, evalKey, evalSubKey := config.ParseConfigKeys(configHeader.Value)
+					if evalKey != "" {
+						if evalKey != pr.value.value {
+							t.Errorf("Proxy.parseHeadersRules() value.value == '%s', want '%s'", pr.value.value, evalKey)
+						}
+
+						if evalSubKey != pr.value.subKey {
+							t.Errorf("Proxy.parseHeadersRules() value.subKey == '%s', want '%s'", pr.value.subKey, evalSubKey)
+						}
+					} else {
+						if configHeader.Value != pr.value.value {
+							t.Errorf("Proxy.parseHeadersRules() value == '%s', want '%s'", pr.value.value, configHeader.Value)
+						}
+					}
+				}
+			}
+
+		})
+	}
+}
+
+func TestProxy_saveBackendResponse(t *testing.T) {
+	p, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cacheKey := []byte("test")
+	path := []byte("/test/")
+	body := []byte("Test Body")
+	headers := map[string][]byte{
+		"X-Data":   []byte("1"),
+		"X-Data-2": []byte("2"),
+		"X-Data-3": []byte("3"),
+	}
+	entry := cache.AcquireEntry()
+
+	resp := fasthttp.AcquireResponse()
+	resp.SetBody(body)
+	for k, v := range headers {
+		resp.Header.SetCanonical([]byte(k), v)
+	}
+
+	err = p.saveBackendResponse(cacheKey, path, resp, entry)
+	if err != nil {
+		t.Fatalf("Proxy.saveBackendResponse() returns err: %v", err)
+	}
+
+	entry.Reset()
+	err = p.cache.GetBytes(cacheKey, entry)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	r := entry.GetResponse(path)
+	if r == nil {
+		t.Fatalf("Proxy.saveBackendResponse() path '%s' not found in cache", path)
+	}
+
+	if !bytes.Equal(r.Body, body) {
+		t.Fatalf("Proxy.saveBackendResponse() cache body == '%s', want '%s'", r.Body, body)
+	}
+
+	for k, v := range headers {
+		for _, h := range r.Headers {
+			if string(h.Key) == k && bytes.Equal(h.Value, v) {
+				goto next
+			}
+		}
+		t.Errorf("Proxy.saveBackendResponse() header '%s=%s' not found in cache", k, v)
+
+	next:
+	}
+}
+
+func TestProxy_fetchFromBackend(t *testing.T) {
+	type args struct {
+		cacheKey     []byte
+		path         []byte
+		body         []byte
+		method       []byte
+		headers      map[string][]byte
+		statusCode   int
+		noCacheRules []string
+	}
+
+	type want struct {
+		saveInCache bool
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "StatusOk",
+			args: args{
+				cacheKey: []byte("test"),
+				path:     []byte("/test/"),
+				body:     []byte("Test Body"),
+				method:   []byte("POST"),
+				headers: map[string][]byte{
+					"X-Data":   []byte("1"),
+					"X-Data-2": []byte("2"),
+					"X-Data-3": []byte("3"),
+				},
+				statusCode: 200,
+			},
+			want: want{
+				saveInCache: true,
+			},
+		},
+		{
+			name: "StatusRedirect",
+			args: args{
+				cacheKey: []byte("test"),
+				path:     []byte("/test/"),
+				body:     []byte("Test Body"),
+				method:   []byte("GET"),
+				headers: map[string][]byte{
+					headerLocation: []byte("http://www.kratgo.com"),
+				},
+				statusCode: 301,
+			},
+			want: want{
+				saveInCache: false,
+			},
+		},
+		{
+			name: "NoCacheByRule",
+			args: args{
+				cacheKey: []byte("test"),
+				path:     []byte("/test/"),
+				body:     []byte("Test Body"),
+				method:   []byte("GET"),
+				headers: map[string][]byte{
+					"X-Data": []byte("1"),
+				},
+				statusCode: 200,
+				noCacheRules: []string{
+					"$(path) == '/test/'",
+				},
+			},
+			want: want{
+				saveInCache: false,
+			},
+		},
+		{
+			name: "NoCacheByStatusCode",
+			args: args{
+				cacheKey: []byte("test"),
+				path:     []byte("/test/"),
+				body:     []byte("Test Body"),
+				method:   []byte("GET"),
+				headers: map[string][]byte{
+					"X-Data": []byte("1"),
+				},
+				statusCode: 404,
+			},
+			want: want{
+				saveInCache: false,
+			},
+		},
+	}
+
+	p, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, tt := range tests {
+		p.cfg.Proxy.Nocache = tt.args.noCacheRules
+
+		t.Run(tt.name, func(t *testing.T) {
+			pt := p.acquireTools()
+			entry := cache.AcquireEntry()
+
+			ctx := new(fasthttp.RequestCtx)
+			ctx.Request.SetRequestURIBytes(tt.args.path)
+			ctx.Request.Header.SetMethodBytes(tt.args.method)
+			for k, v := range tt.args.headers {
+				ctx.Request.Header.SetCanonical([]byte(k), v)
+			}
+
+			p.httpClient = &mockHTTPClient{
+				body:       tt.args.body,
+				statusCode: tt.args.statusCode,
+				headers:    tt.args.headers,
+			}
+
+			err = p.fetchFromBackend(tt.args.cacheKey, tt.args.path, ctx, pt)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			err = p.cache.GetBytes(tt.args.cacheKey, entry)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if tt.want.saveInCache {
+				r := entry.GetResponse(tt.args.path)
+				if r == nil {
+					t.Fatalf("Proxy.saveBackendResponse() path '%s' not found in cache", tt.args.path)
+				}
+
+				if !bytes.Equal(r.Body, tt.args.body) {
+					t.Fatalf("Proxy.saveBackendResponse() cache body == '%s', want '%s'", r.Body, tt.args.body)
+				}
+
+				for k, v := range tt.args.headers {
+					for _, h := range r.Headers {
+						if string(h.Key) == k && bytes.Equal(h.Value, v) {
+							goto next
+						}
+					}
+					t.Errorf("Proxy.saveBackendResponse() header '%s=%s' not found in cache", k, v)
+
+				next:
+				}
+			}
+		})
+	}
+}
+
+func TestProxy_handler(t *testing.T) {
+	type args struct {
+		host         []byte
+		path         []byte
+		cachePath    []byte
+		noCacheRules []string
+	}
+
+	type want struct {
+		getFromCache   bool
+		getFromBackend bool
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "ResponseFromCache",
+			args: args{
+				host:      []byte("www.kratgo.com"),
+				path:      []byte("/test/"),
+				cachePath: []byte("/test/"),
+			},
+			want: want{
+				getFromCache:   true,
+				getFromBackend: false,
+			},
+		},
+		{
+			name: "ResponseFromCacheNotFound",
+			args: args{
+				host:      []byte("www.kratgo.com"),
+				path:      []byte("/test/"),
+				cachePath: []byte("/test/data/"),
+			},
+			want: want{
+				getFromCache:   true,
+				getFromBackend: true,
+			},
+		},
+		{
+			name: "ResponseFromBackend",
+			args: args{
+				host:      []byte("www.kratgo.com"),
+				path:      []byte("/test/"),
+				cachePath: []byte("/test/data/"),
+			},
+			want: want{
+				getFromCache:   false,
+				getFromBackend: true,
+			},
+		},
+		{
+			name: "ResponseFromBackendByNocache",
+			args: args{
+				host: []byte("www.kratgo.com"),
+				noCacheRules: []string{
+					"$(host) == 'www.kratgo.com'",
+				},
+			},
+			want: want{
+				getFromCache:   false,
+				getFromBackend: true,
+			},
+		},
+	}
+
+	p, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, tt := range tests {
+		p.cfg.Proxy.Nocache = tt.args.noCacheRules
+		p.nocacheRules = p.nocacheRules[:0]
+
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := new(fasthttp.RequestCtx)
+			ctx.Request.SetRequestURIBytes(tt.args.path)
+			ctx.Request.Header.SetHostBytes(tt.args.host)
+
+			entry := cache.AcquireEntry()
+			response := cache.AcquireResponse()
+			response.Path = tt.args.cachePath
+			entry.SetResponse(*response)
+			p.cache.SetBytes(tt.args.host, entry)
+
+			httpClientMock := &mockHTTPClient{
+				statusCode: 200,
+			}
+			p.httpClient = httpClientMock
+
+			p.handler(ctx)
+
+			if tt.want.getFromCache {
+				if tt.want.getFromBackend && !httpClientMock.called {
+					t.Errorf("Procy.handler() response from backend '%v', want '%v'", false, true)
+				} else if !tt.want.getFromBackend && httpClientMock.called {
+					t.Errorf("Procy.handler() response from cache '%v', want '%v'", true, false)
+				}
+
+			} else {
+				if tt.want.getFromBackend && !httpClientMock.called {
+					t.Errorf("Procy.handler() response from backend '%v', want '%v'", false, true)
+				} else if !tt.want.getFromBackend && httpClientMock.called {
+					t.Errorf("Procy.handler() response from backend '%v', want '%v'", false, true)
+				}
+			}
+		})
+	}
+}
+
 func BenchmarkHandler(b *testing.B) {
 	p, err := New(testConfig())
 	if err != nil {
-		panic(err)
+		b.Fatal(err)
 	}
-	p.httpClient = new(mockHTTPClient)
+	p.httpClient = &mockHTTPClient{
+		body:       []byte("Benchmark Response Body"),
+		statusCode: 200,
+		headers: map[string][]byte{
+			"X-Data": []byte("Kratgo"),
+		},
+	}
 
 	ctx := new(fasthttp.RequestCtx)
 	ctx.Request.SetRequestURI("/bench")
@@ -235,9 +706,15 @@ func BenchmarkHandlerWithoutCache(b *testing.B) {
 
 	p, err := New(cfg)
 	if err != nil {
-		panic(err)
+		b.Fatal(err)
 	}
-	p.httpClient = new(mockHTTPClient)
+	p.httpClient = &mockHTTPClient{
+		body:       []byte("Benchmark Response Body"),
+		statusCode: 200,
+		headers: map[string][]byte{
+			"X-Data": []byte("Kratgo"),
+		},
+	}
 
 	ctx := new(fasthttp.RequestCtx)
 	ctx.Request.SetRequestURI(path)

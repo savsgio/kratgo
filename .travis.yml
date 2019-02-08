@@ -1,17 +1,19 @@
 language: go
 sudo: false
 go:
-  - 1.9.x
-  - 1.10.x
   - 1.11.x
   - tip
+
+env:
+  - GO111MODULE=on
 
 os:
   - linux
   - osx
 
 before_install:
-  - go get ./cmd/...
+  - go get -u -v github.com/mattn/goveralls
+  - go get -v ./cmd/...
 
 script:
     # build test for supported platforms
@@ -21,8 +23,8 @@ script:
   - GOOS=windows go build ./cmd/...
   - GOARCH=386 go build ./cmd/...
 
-   # run tests on a standard platform
-  - go test -v ./...
+   # run tests with the race detector
+  - go test -v -race ./...
 
-  # run tests with the race detector as well
-  - go test -race -v ./...
+  # run tests
+  - $GOPATH/bin/goveralls -v -service=travis-ci
