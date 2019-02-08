@@ -29,7 +29,7 @@ func Test_intSliceInclude(t *testing.T) {
 	array := []int{1, 2, 3, 4, 5}
 
 	n := 3
-	if ok := intSliceInclude(array, 3); !ok {
+	if ok := intSliceInclude(array, n); !ok {
 		t.Errorf("intSliceIndexOf() = %v, want %v", ok, true)
 	}
 
