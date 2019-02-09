@@ -60,6 +60,10 @@ func New(cfg config.Config) (*Proxy, error) {
 		LogOutput:  logOutput,
 	})
 
+	if len(cfg.Proxy.BackendsAddrs) == 0 {
+		return nil, fmt.Errorf("Proxy.BackendsAddrs configuration is mandatory")
+	}
+
 	p.backends = make([]fetcher, len(cfg.Proxy.BackendsAddrs))
 	for i, addr := range cfg.Proxy.BackendsAddrs {
 		p.backends[i] = &fasthttp.HostClient{
