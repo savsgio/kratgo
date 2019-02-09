@@ -16,8 +16,8 @@ import (
 func testConfig() config.Config {
 	return config.Config{
 		Proxy: config.Proxy{
-			Addr:        "localhost:8000",
-			BackendAddr: "localhost:9997",
+			Addr:          "localhost:8000",
+			BackendsAddrs: []string{"localhost:9997", "localhost:9998", "localhost:9999"},
 		},
 		Cache: config.Cache{
 			TTL:              10 * time.Second,
@@ -32,6 +32,24 @@ func testConfig() config.Config {
 		},
 		LogLevel:  "fatal",
 		LogOutput: "console",
+	}
+}
+
+func TestProxy_getBackend(t *testing.T) {
+	p, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var prevBackend fetcher
+	for i := 0; i < len(p.backends)*3; i++ {
+		backend := p.getBackend()
+
+		if backend == prevBackend {
+			t.Errorf("Proxy.getBackend() returns same backend, current '%p', previous '%p'", backend, prevBackend)
+		}
+
+		prevBackend = backend
 	}
 }
 
@@ -508,6 +526,15 @@ func TestProxy_fetchFromBackend(t *testing.T) {
 	for _, tt := range tests {
 		p.cfg.Proxy.Nocache = tt.args.noCacheRules
 
+		p.backends = []fetcher{
+			&mockHTTPClient{
+				body:       tt.args.body,
+				statusCode: tt.args.statusCode,
+				headers:    tt.args.headers,
+			},
+		}
+		p.totalBackends = len(p.backends)
+
 		t.Run(tt.name, func(t *testing.T) {
 			pt := p.acquireTools()
 			entry := cache.AcquireEntry()
@@ -517,12 +544,6 @@ func TestProxy_fetchFromBackend(t *testing.T) {
 			ctx.Request.Header.SetMethodBytes(tt.args.method)
 			for k, v := range tt.args.headers {
 				ctx.Request.Header.SetCanonical([]byte(k), v)
-			}
-
-			p.httpClient = &mockHTTPClient{
-				body:       tt.args.body,
-				statusCode: tt.args.statusCode,
-				headers:    tt.args.headers,
 			}
 
 			err = p.fetchFromBackend(tt.args.cacheKey, tt.args.path, ctx, pt)
@@ -652,7 +673,8 @@ func TestProxy_handler(t *testing.T) {
 			httpClientMock := &mockHTTPClient{
 				statusCode: 200,
 			}
-			p.httpClient = httpClientMock
+			p.backends = []fetcher{httpClientMock}
+			p.totalBackends = len(p.backends)
 
 			p.handler(ctx)
 
@@ -679,13 +701,16 @@ func BenchmarkHandler(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
-	p.httpClient = &mockHTTPClient{
-		body:       []byte("Benchmark Response Body"),
-		statusCode: 200,
-		headers: map[string][]byte{
-			"X-Data": []byte("Kratgo"),
+	p.backends = []fetcher{
+		&mockHTTPClient{
+			body:       []byte("Benchmark Response Body"),
+			statusCode: 200,
+			headers: map[string][]byte{
+				"X-Data": []byte("Kratgo"),
+			},
 		},
 	}
+	p.totalBackends = len(p.backends)
 
 	ctx := new(fasthttp.RequestCtx)
 	ctx.Request.SetRequestURI("/bench")
@@ -708,13 +733,17 @@ func BenchmarkHandlerWithoutCache(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
-	p.httpClient = &mockHTTPClient{
-		body:       []byte("Benchmark Response Body"),
-		statusCode: 200,
-		headers: map[string][]byte{
-			"X-Data": []byte("Kratgo"),
+
+	p.backends = []fetcher{
+		&mockHTTPClient{
+			body:       []byte("Benchmark Response Body"),
+			statusCode: 200,
+			headers: map[string][]byte{
+				"X-Data": []byte("Kratgo"),
+			},
 		},
 	}
+	p.totalBackends = len(p.backends)
 
 	ctx := new(fasthttp.RequestCtx)
 	ctx.Request.SetRequestURI(path)

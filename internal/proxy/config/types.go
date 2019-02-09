@@ -14,10 +14,10 @@ type Config struct {
 
 // Proxy ...
 type Proxy struct {
-	Addr        string        `yaml:"addr"`
-	BackendAddr string        `yaml:"backendAddr"`
-	Response    ProxyResponse `yaml:"response"`
-	Nocache     []string      `yaml:"nocache"`
+	Addr          string        `yaml:"addr"`
+	BackendsAddrs []string      `yaml:"backendsAddrs"`
+	Response      ProxyResponse `yaml:"response"`
+	Nocache       []string      `yaml:"nocache"`
 }
 
 // ProxyResponse ...

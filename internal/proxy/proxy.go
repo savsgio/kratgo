@@ -32,15 +32,12 @@ func New(cfg config.Config) (*Proxy, error) {
 		Logger:  log,
 	}
 
-	hc := &fasthttp.HostClient{
-		Addr: cfg.Proxy.BackendAddr,
-	}
-
 	cacheVerbose := cfg.LogLevel == logger.DEBUG
 	cacheCleanFrequency := cfg.Cache.CleanFrequency
 	if cacheCleanFrequency == 0 {
 		return nil, fmt.Errorf("Cache.CleanFrequency configuration must be greater than 0")
 	}
+
 	c, err := cache.New(cache.Config{
 		TTL:              cfg.Cache.TTL * time.Minute,
 		CleanFrequency:   cacheCleanFrequency * time.Minute,
@@ -63,10 +60,17 @@ func New(cfg config.Config) (*Proxy, error) {
 		LogOutput:  logOutput,
 	})
 
+	p.backends = make([]fetcher, len(cfg.Proxy.BackendsAddrs))
+	for i, addr := range cfg.Proxy.BackendsAddrs {
+		p.backends[i] = &fasthttp.HostClient{
+			Addr: addr,
+		}
+	}
+	p.totalBackends = len(cfg.Proxy.BackendsAddrs)
+
 	p.server = s
 	p.cache = c
 	p.invalidator = i
-	p.httpClient = hc
 	p.httpScheme = defaultHTTPScheme
 	p.log = log
 	p.cfg = cfg
@@ -106,6 +110,26 @@ func (p *Proxy) releaseTools(pt *proxyTools) {
 	pt.entry.Reset()
 
 	p.tools.Put(pt)
+}
+
+func (p *Proxy) getBackend() fetcher {
+	if p.totalBackends == 0 {
+		return p.backends[0]
+	}
+
+	p.mu.Lock()
+
+	if p.currentBackend >= p.totalBackends-1 {
+		p.currentBackend = 0
+	} else {
+		p.currentBackend++
+	}
+
+	backend := p.backends[p.currentBackend]
+
+	p.mu.Unlock()
+
+	return backend
 }
 
 func (p *Proxy) newEvaluableExpression(rule string) (*govaluate.EvaluableExpression, []ruleParam, error) {
@@ -200,7 +224,7 @@ func (p *Proxy) fetchFromBackend(cacheKey, path []byte, ctx *fasthttp.RequestCtx
 	pt.httpClient.setMethodBytes(ctx.Method())
 	pt.httpClient.setRequestURIBytes(path)
 
-	if err := pt.httpClient.do(p.httpClient); err != nil {
+	if err := pt.httpClient.do(p.getBackend()); err != nil {
 		return fmt.Errorf("Could not fetch response from backend: %v", err)
 	}
 

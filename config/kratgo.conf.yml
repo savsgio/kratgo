@@ -64,7 +64,7 @@ invalidator:
 
 # --- Proxy ---
 # addr: IP and Port of Kratgo
-# backendAddr: IP and Port of backend server
+# backendsAddrs: Array with "addr:port" of the backends
 # response: Configuration to manipulate reponse (Optional)
 #   headers:
 #     set: Configuration to SET headers from response (Optional)
@@ -80,7 +80,7 @@ invalidator:
 
 proxy:
   addr: 0.0.0.0:6081
-  backendAddr: <addr>:<port>
+  backendsAddrs: [<addr1>:<port1>, ...]
   response:
     headers:
       set:

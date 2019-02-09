@@ -19,7 +19,10 @@ type Proxy struct {
 	cache       *cache.Cache
 	invalidator *invalidator.Invalidator
 
-	httpClient fetcher
+	backends       []fetcher
+	totalBackends  int
+	currentBackend int
+
 	httpScheme string
 
 	nocacheRules []rule
@@ -31,6 +34,8 @@ type Proxy struct {
 	tools sync.Pool
 
 	cfg config.Config
+
+	mu sync.RWMutex
 }
 
 type proxyTools struct {
