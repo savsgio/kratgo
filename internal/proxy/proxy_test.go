@@ -17,7 +17,7 @@ func testConfig() config.Config {
 	return config.Config{
 		Proxy: config.Proxy{
 			Addr:          "localhost:8000",
-			BackendsAddrs: []string{"localhost:9997", "localhost:9998", "localhost:9999"},
+			BackendsAddrs: []string{"localhost:9990", "localhost:9991", "localhost:9993", "localhost:9994"},
 		},
 		Cache: config.Cache{
 			TTL:              10 * time.Second,
@@ -45,8 +45,14 @@ func TestProxy_getBackend(t *testing.T) {
 	for i := 0; i < len(p.backends)*3; i++ {
 		backend := p.getBackend()
 
-		if backend == prevBackend {
-			t.Errorf("Proxy.getBackend() returns same backend, current '%p', previous '%p'", backend, prevBackend)
+		if p.totalBackends == 1 {
+			if prevBackend != nil && backend != prevBackend {
+				t.Errorf("Proxy.getBackend() returns other backend, current '%p', previous '%p'", backend, prevBackend)
+			}
+		} else {
+			if backend == prevBackend {
+				t.Errorf("Proxy.getBackend() returns same backend, current '%p', previous '%p'", backend, prevBackend)
+			}
 		}
 
 		prevBackend = backend

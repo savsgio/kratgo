@@ -113,7 +113,7 @@ func (p *Proxy) releaseTools(pt *proxyTools) {
 }
 
 func (p *Proxy) getBackend() fetcher {
-	if p.totalBackends == 0 {
+	if p.totalBackends == 1 {
 		return p.backends[0]
 	}
 
