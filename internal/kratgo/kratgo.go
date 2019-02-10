@@ -1,8 +1,6 @@
 package kratgo
 
 import (
-	"fmt"
-
 	"github.com/savsgio/kratgo/internal/admin"
 	"github.com/savsgio/kratgo/internal/cache"
 	"github.com/savsgio/kratgo/internal/config"
@@ -19,10 +17,6 @@ func New(cfg config.Config) (*Kratgo, error) {
 		return nil, err
 	}
 	k.logFile = logFile
-
-	if cfg.Cache.CleanFrequency == 0 {
-		return nil, fmt.Errorf("Cache.CleanFrequency configuration must be greater than 0")
-	}
 
 	c, err := cache.New(cache.Config{
 		FileConfig: cfg.Cache,
