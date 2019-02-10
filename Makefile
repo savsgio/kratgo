@@ -8,12 +8,12 @@ BIN_FILE = $(PROJECT_NAME)
 
 INTERNAL_DIR = ./internal
 
-PROXY_DIR = $(INTERNAL_DIR)/proxy
+KRATGO_DIR = $(INTERNAL_DIR)/$(PROJECT_NAME)
 CMD_DIR = ./cmd/$(PROJECT_NAME)
 CONFIG_DIR = ./config/
 
 # Get version constant
-VERSION := $(shell cat $(PROXY_DIR)/const.go | grep "const version = " | awk '{print $$NF}' | sed -e 's/^.//' -e 's/.$$//')
+VERSION := $(shell cat $(KRATGO_DIR)/const.go | grep "const Version = " | awk '{print $$NF}' | sed -e 's/^.//' -e 's/.$$//')
 BUILD := $(shell git rev-parse HEAD)
 
 # Use linker flags to provide version/build settings to the binary
