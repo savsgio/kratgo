@@ -62,7 +62,15 @@ func New(cfg config.Config) (*Kratgo, error) {
 func (k *Kratgo) ListenAndServe() error {
 	defer k.logFile.Close()
 
-	go k.Admin.ListenAndServe()
+	err := make(chan error, 1)
 
-	return k.Proxy.ListenAndServe()
+	go func() {
+		err <- k.Admin.ListenAndServe()
+	}()
+
+	go func() {
+		err <- k.Proxy.ListenAndServe()
+	}()
+
+	return <-err
 }

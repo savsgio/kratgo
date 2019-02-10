@@ -8,7 +8,6 @@ import (
 // New ...
 func New(cfg Config) *Admin {
 	a := new(Admin)
-
 	a.fileConfig = cfg.FileConfig
 
 	log := logger.New("kratgo-admin", cfg.LogLevel, cfg.LogOutput)

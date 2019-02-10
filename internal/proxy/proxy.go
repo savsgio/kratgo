@@ -15,6 +15,10 @@ import (
 
 // New ...
 func New(cfg Config) (*Proxy, error) {
+	if len(cfg.FileConfig.BackendsAddrs) == 0 {
+		return nil, fmt.Errorf("Proxy.BackendsAddrs configuration is mandatory")
+	}
+
 	p := new(Proxy)
 	p.fileConfig = cfg.FileConfig
 
@@ -29,10 +33,6 @@ func New(cfg Config) (*Proxy, error) {
 	p.cache = cfg.Cache
 	p.httpScheme = cfg.HTTPScheme
 	p.log = log
-
-	if len(p.fileConfig.BackendsAddrs) == 0 {
-		return nil, fmt.Errorf("Proxy.BackendsAddrs configuration is mandatory")
-	}
 
 	p.backends = make([]fetcher, len(p.fileConfig.BackendsAddrs))
 	for i, addr := range p.fileConfig.BackendsAddrs {

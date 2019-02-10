@@ -25,13 +25,12 @@ func bigcacheConfig(cfg config.Cache) bigcache.Config {
 
 // New ...
 func New(cfg Config) (*Cache, error) {
-	c := new(Cache)
-
-	c.fileConfig = cfg.FileConfig
-
-	if c.fileConfig.CleanFrequency == 0 {
+	if cfg.FileConfig.CleanFrequency == 0 {
 		return nil, fmt.Errorf("Cache.CleanFrequency configuration must be greater than 0")
 	}
+
+	c := new(Cache)
+	c.fileConfig = cfg.FileConfig
 
 	log := logger.New("kratgo-cache", cfg.LogLevel, cfg.LogOutput)
 
