@@ -46,7 +46,7 @@ func New(cfg config.Config) (*Kratgo, error) {
 		LogOutput:  logFile,
 	})
 
-	k.Admin = admin.New(admin.Config{
+	a, err := admin.New(admin.Config{
 		FileConfig:  cfg.Admin,
 		Cache:       c,
 		Invalidator: i,
@@ -54,6 +54,10 @@ func New(cfg config.Config) (*Kratgo, error) {
 		LogLevel:    cfg.LogLevel,
 		LogOutput:   logFile,
 	})
+	if err != nil {
+		return nil, err
+	}
+	k.Admin = a
 
 	return k, nil
 }

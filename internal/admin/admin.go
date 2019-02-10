@@ -1,22 +1,32 @@
 package admin
 
 import (
+	"fmt"
+	"strconv"
+	"strings"
+
+	"github.com/savsgio/atreugo/v7"
 	logger "github.com/savsgio/go-logger"
-	"github.com/valyala/fasthttp"
 )
 
 // New ...
-func New(cfg Config) *Admin {
+func New(cfg Config) (*Admin, error) {
 	a := new(Admin)
 	a.fileConfig = cfg.FileConfig
 
 	log := logger.New("kratgo-admin", cfg.LogLevel, cfg.LogOutput)
 
-	a.server = &fasthttp.Server{
-		Handler: a.httpHandler,
-		Name:    "Kratgo",
-		Logger:  log,
+	addr := strings.Split(cfg.FileConfig.Addr, ":")
+	port, err := strconv.Atoi(addr[1])
+	if err != nil {
+		return nil, fmt.Errorf("Invalid address '%s': %v", cfg.FileConfig.Addr, err)
 	}
+
+	a.server = atreugo.New(&atreugo.Config{
+		Host: addr[0],
+		Port: port,
+	})
+	a.server.SetLogOutput(cfg.LogOutput)
 
 	a.httpScheme = cfg.HTTPScheme
 
@@ -24,14 +34,18 @@ func New(cfg Config) *Admin {
 	a.invalidator = cfg.Invalidator
 	a.log = log
 
-	return a
+	a.init()
+
+	return a, nil
+}
+
+func (a *Admin) init() {
+	a.server.Path("POST", "/invalidate/", a.invalidateView)
 }
 
 // ListenAndServe ...
 func (a *Admin) ListenAndServe() error {
 	go a.invalidator.Start()
 
-	a.log.Infof("Listening on: %s://%s/", a.httpScheme, a.fileConfig.Addr)
-
-	return a.server.ListenAndServe(a.fileConfig.Addr)
+	return a.server.ListenAndServe()
 }
