@@ -13,7 +13,7 @@ import (
 
 func bigcacheConfig(cfg config.Cache) bigcache.Config {
 	return bigcache.Config{
-		Shards:             1024,
+		Shards:             defaultBigcacheShards,
 		LifeWindow:         cfg.TTL * time.Minute,
 		CleanWindow:        cfg.CleanFrequency * time.Minute,
 		MaxEntriesInWindow: cfg.MaxEntries,

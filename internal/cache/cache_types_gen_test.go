@@ -235,8 +235,8 @@ func BenchmarkDecodeResponse(b *testing.B) {
 	}
 }
 
-func TestMarshalUnmarshalResponseHeaders(t *testing.T) {
-	v := ResponseHeaders{}
+func TestMarshalUnmarshalResponseHeader(t *testing.T) {
+	v := ResponseHeader{}
 	bts, err := v.MarshalMsg(nil)
 	if err != nil {
 		t.Fatal(err)
@@ -258,8 +258,8 @@ func TestMarshalUnmarshalResponseHeaders(t *testing.T) {
 	}
 }
 
-func BenchmarkMarshalMsgResponseHeaders(b *testing.B) {
-	v := ResponseHeaders{}
+func BenchmarkMarshalMsgResponseHeader(b *testing.B) {
+	v := ResponseHeader{}
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -267,8 +267,8 @@ func BenchmarkMarshalMsgResponseHeaders(b *testing.B) {
 	}
 }
 
-func BenchmarkAppendMsgResponseHeaders(b *testing.B) {
-	v := ResponseHeaders{}
+func BenchmarkAppendMsgResponseHeader(b *testing.B) {
+	v := ResponseHeader{}
 	bts := make([]byte, 0, v.Msgsize())
 	bts, _ = v.MarshalMsg(bts[0:0])
 	b.SetBytes(int64(len(bts)))
@@ -279,8 +279,8 @@ func BenchmarkAppendMsgResponseHeaders(b *testing.B) {
 	}
 }
 
-func BenchmarkUnmarshalResponseHeaders(b *testing.B) {
-	v := ResponseHeaders{}
+func BenchmarkUnmarshalResponseHeader(b *testing.B) {
+	v := ResponseHeader{}
 	bts, _ := v.MarshalMsg(nil)
 	b.ReportAllocs()
 	b.SetBytes(int64(len(bts)))
@@ -293,8 +293,8 @@ func BenchmarkUnmarshalResponseHeaders(b *testing.B) {
 	}
 }
 
-func TestEncodeDecodeResponseHeaders(t *testing.T) {
-	v := ResponseHeaders{}
+func TestEncodeDecodeResponseHeader(t *testing.T) {
+	v := ResponseHeader{}
 	var buf bytes.Buffer
 	msgp.Encode(&buf, &v)
 
@@ -303,7 +303,7 @@ func TestEncodeDecodeResponseHeaders(t *testing.T) {
 		t.Logf("WARNING: Msgsize() for %v is inaccurate", v)
 	}
 
-	vn := ResponseHeaders{}
+	vn := ResponseHeader{}
 	err := msgp.Decode(&buf, &vn)
 	if err != nil {
 		t.Error(err)
@@ -317,8 +317,8 @@ func TestEncodeDecodeResponseHeaders(t *testing.T) {
 	}
 }
 
-func BenchmarkEncodeResponseHeaders(b *testing.B) {
-	v := ResponseHeaders{}
+func BenchmarkEncodeResponseHeader(b *testing.B) {
+	v := ResponseHeader{}
 	var buf bytes.Buffer
 	msgp.Encode(&buf, &v)
 	b.SetBytes(int64(buf.Len()))
@@ -331,8 +331,8 @@ func BenchmarkEncodeResponseHeaders(b *testing.B) {
 	en.Flush()
 }
 
-func BenchmarkDecodeResponseHeaders(b *testing.B) {
-	v := ResponseHeaders{}
+func BenchmarkDecodeResponseHeader(b *testing.B) {
+	v := ResponseHeader{}
 	var buf bytes.Buffer
 	msgp.Encode(&buf, &v)
 	b.SetBytes(int64(buf.Len()))

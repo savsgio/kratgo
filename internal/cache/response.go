@@ -19,19 +19,19 @@ func ReleaseResponse(r *Response) {
 	responsePool.Put(r)
 }
 
-func (r *Response) allocHeader(data []ResponseHeaders) ([]ResponseHeaders, *ResponseHeaders) {
+func (r *Response) allocHeader(data []ResponseHeader) ([]ResponseHeader, *ResponseHeader) {
 	n := len(data)
 
 	if cap(data) > n {
 		data = data[:n+1]
 	} else {
-		data = append(data, ResponseHeaders{})
+		data = append(data, ResponseHeader{})
 	}
 
 	return data, &data[n]
 }
 
-func (r *Response) appendHeader(data []ResponseHeaders, k, v []byte) []ResponseHeaders {
+func (r *Response) appendHeader(data []ResponseHeader, k, v []byte) []ResponseHeader {
 	data, h := r.allocHeader(data)
 
 	h.Key = append(h.Key[:0], k...)

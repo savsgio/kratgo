@@ -192,7 +192,7 @@ func (z *Response) DecodeMsg(dc *msgp.Reader) (err error) {
 			if cap(z.Headers) >= int(zb0002) {
 				z.Headers = (z.Headers)[:zb0002]
 			} else {
-				z.Headers = make([]ResponseHeaders, zb0002)
+				z.Headers = make([]ResponseHeader, zb0002)
 			}
 			for za0001 := range z.Headers {
 				var zb0003 uint32
@@ -365,7 +365,7 @@ func (z *Response) UnmarshalMsg(bts []byte) (o []byte, err error) {
 			if cap(z.Headers) >= int(zb0002) {
 				z.Headers = (z.Headers)[:zb0002]
 			} else {
-				z.Headers = make([]ResponseHeaders, zb0002)
+				z.Headers = make([]ResponseHeader, zb0002)
 			}
 			for za0001 := range z.Headers {
 				var zb0003 uint32
@@ -425,7 +425,7 @@ func (z *Response) Msgsize() (s int) {
 }
 
 // DecodeMsg implements msgp.Decodable
-func (z *ResponseHeaders) DecodeMsg(dc *msgp.Reader) (err error) {
+func (z *ResponseHeader) DecodeMsg(dc *msgp.Reader) (err error) {
 	var field []byte
 	_ = field
 	var zb0001 uint32
@@ -466,7 +466,7 @@ func (z *ResponseHeaders) DecodeMsg(dc *msgp.Reader) (err error) {
 }
 
 // EncodeMsg implements msgp.Encodable
-func (z *ResponseHeaders) EncodeMsg(en *msgp.Writer) (err error) {
+func (z *ResponseHeader) EncodeMsg(en *msgp.Writer) (err error) {
 	// map header, size 2
 	// write "Key"
 	err = en.Append(0x82, 0xa3, 0x4b, 0x65, 0x79)
@@ -492,7 +492,7 @@ func (z *ResponseHeaders) EncodeMsg(en *msgp.Writer) (err error) {
 }
 
 // MarshalMsg implements msgp.Marshaler
-func (z *ResponseHeaders) MarshalMsg(b []byte) (o []byte, err error) {
+func (z *ResponseHeader) MarshalMsg(b []byte) (o []byte, err error) {
 	o = msgp.Require(b, z.Msgsize())
 	// map header, size 2
 	// string "Key"
@@ -505,7 +505,7 @@ func (z *ResponseHeaders) MarshalMsg(b []byte) (o []byte, err error) {
 }
 
 // UnmarshalMsg implements msgp.Unmarshaler
-func (z *ResponseHeaders) UnmarshalMsg(bts []byte) (o []byte, err error) {
+func (z *ResponseHeader) UnmarshalMsg(bts []byte) (o []byte, err error) {
 	var field []byte
 	_ = field
 	var zb0001 uint32
@@ -547,7 +547,7 @@ func (z *ResponseHeaders) UnmarshalMsg(bts []byte) (o []byte, err error) {
 }
 
 // Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
-func (z *ResponseHeaders) Msgsize() (s int) {
+func (z *ResponseHeader) Msgsize() (s int) {
 	s = 1 + 4 + msgp.BytesPrefixSize + len(z.Key) + 6 + msgp.BytesPrefixSize + len(z.Value)
 	return
 }

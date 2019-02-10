@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-	"time"
 
 	logger "github.com/savsgio/go-logger"
 
@@ -21,8 +20,8 @@ var testCache *cache.Cache
 func init() {
 	c, err := cache.New(cache.Config{
 		FileConfig: config.Cache{
-			TTL:              10 * time.Second,
-			CleanFrequency:   5 * time.Second,
+			TTL:              10,
+			CleanFrequency:   5,
 			MaxEntries:       5,
 			MaxEntrySize:     20,
 			HardMaxCacheSize: 30,
