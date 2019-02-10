@@ -30,6 +30,8 @@ func New(cfg Config) *Admin {
 
 // ListenAndServe ...
 func (a *Admin) ListenAndServe() error {
+	go a.invalidator.Start()
+
 	a.log.Infof("Listening on: %s://%s/", a.httpScheme, a.fileConfig.Addr)
 
 	return a.server.ListenAndServe(a.fileConfig.Addr)
