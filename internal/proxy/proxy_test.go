@@ -3,35 +3,49 @@ package proxy
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
 	"time"
 
+	logger "github.com/savsgio/go-logger"
+
 	"github.com/savsgio/kratgo/internal/cache"
-	"github.com/savsgio/kratgo/internal/proxy/config"
+	"github.com/savsgio/kratgo/internal/config"
 	"github.com/valyala/fasthttp"
 )
 
-func testConfig() config.Config {
-	return config.Config{
-		Proxy: config.Proxy{
-			Addr:          "localhost:8000",
-			BackendsAddrs: []string{"localhost:9990", "localhost:9991", "localhost:9993", "localhost:9994"},
-		},
-		Cache: config.Cache{
+var testCache *cache.Cache
+
+func init() {
+	c, err := cache.New(cache.Config{
+		FileConfig: config.Cache{
 			TTL:              10 * time.Second,
 			CleanFrequency:   5 * time.Second,
 			MaxEntries:       5,
 			MaxEntrySize:     20,
 			HardMaxCacheSize: 30,
 		},
-		Invalidator: config.Invalidator{
-			Addr:       "localhost:8001",
-			MaxWorkers: 1,
+		LogLevel:  logger.ERROR,
+		LogOutput: os.Stderr,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	testCache = c
+}
+
+func testConfig() Config {
+	return Config{
+		FileConfig: config.Proxy{
+			Addr:          "localhost:8000",
+			BackendsAddrs: []string{"localhost:9990", "localhost:9991", "localhost:9993", "localhost:9994"},
 		},
-		LogLevel:  "fatal",
-		LogOutput: "console",
+		Cache:     testCache,
+		LogLevel:  logger.ERROR,
+		LogOutput: os.Stderr,
 	}
 }
 
@@ -76,17 +90,6 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 		args args
 		want want
 	}{
-		{
-			name: "version",
-			args: args{
-				rule: fmt.Sprintf("$(version) == '%s'", version),
-			},
-			want: want{
-				strExpr: fmt.Sprintf("%s == '%s'", config.EvalVersionVar, version),
-				params:  []ruleParam{{name: config.EvalVersionVar, subKey: ""}},
-				err:     false,
-			},
-		},
 		{
 			name: "method",
 			args: args{
@@ -252,7 +255,7 @@ func TestProxy_parseNocacheRules(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	p.cfg.Proxy.Nocache = []string{
+	p.fileConfig.Nocache = []string{
 		"$(req.header::X-Requested-With) == 'XMLHttpRequest'",
 		"$(host) == 'www.kratgo.es' || $(req.header::X-Data) != 'Kratgo'",
 	}
@@ -262,8 +265,8 @@ func TestProxy_parseNocacheRules(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(p.cfg.Proxy.Nocache) != len(p.nocacheRules) {
-		t.Errorf("Proxy.parseNocacheRules() parsed %d rules, want %d", len(p.cfg.Proxy.Nocache), len(p.nocacheRules))
+	if len(p.fileConfig.Nocache) != len(p.nocacheRules) {
+		t.Errorf("Proxy.parseNocacheRules() parsed %d rules, want %d", len(p.fileConfig.Nocache), len(p.nocacheRules))
 	}
 }
 
@@ -530,7 +533,7 @@ func TestProxy_fetchFromBackend(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		p.cfg.Proxy.Nocache = tt.args.noCacheRules
+		p.fileConfig.Nocache = tt.args.noCacheRules
 
 		p.backends = []fetcher{
 			&mockHTTPClient{
@@ -662,7 +665,7 @@ func TestProxy_handler(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		p.cfg.Proxy.Nocache = tt.args.noCacheRules
+		p.fileConfig.Nocache = tt.args.noCacheRules
 		p.nocacheRules = p.nocacheRules[:0]
 
 		t.Run(tt.name, func(t *testing.T) {
@@ -731,7 +734,7 @@ func BenchmarkHandler(b *testing.B) {
 func BenchmarkHandlerWithoutCache(b *testing.B) {
 	path := "/bench"
 	cfg := testConfig()
-	cfg.Proxy.Nocache = []string{
+	cfg.FileConfig.Nocache = []string{
 		fmt.Sprintf("$(path) == '%s'", path),
 	}
 

@@ -10,7 +10,6 @@ import (
 )
 
 var configEvaluationVars = map[string]string{
-	configVersionVar:     EvalVersionVar,
 	configMethodVar:      EvalMethodVar,
 	configHostVar:        EvalHostVar,
 	configPathVar:        EvalPathVar,

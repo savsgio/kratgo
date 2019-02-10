@@ -9,26 +9,17 @@ import (
 	"github.com/allegro/bigcache"
 	logger "github.com/savsgio/go-logger"
 	"github.com/savsgio/gotils"
-	"github.com/valyala/fasthttp"
 )
 
 // New ...
-func New(config Config) *Invalidator {
-	log := logger.New("kratgo-invalidator", config.LogLevel, config.LogOutput)
+func New(cfg Config) *Invalidator {
+	log := logger.New("kratgo-invalidator", cfg.LogLevel, cfg.LogOutput)
 
 	i := &Invalidator{
-		cache:            config.Cache,
-		maxWorkers:       config.MaxWorkers,
-		serverHTTPScheme: "http",
-		chEntries:        make(chan Entry),
-		log:              log,
-		cfg:              config,
-	}
-
-	i.server = &fasthttp.Server{
-		Handler: i.httpHandler,
-		Name:    "Kratgo",
-		Logger:  log,
+		fileConfig: cfg.FileConfig,
+		cache:      cfg.Cache,
+		chEntries:  make(chan Entry),
+		log:        log,
 	}
 
 	return i
@@ -67,7 +58,7 @@ func (i *Invalidator) invalidateByHeader(cacheKey, headerKey, headerValue string
 }
 
 func (i *Invalidator) waitAvailableWorkers() {
-	for atomic.LoadInt32(&i.activeWorkers) > i.maxWorkers {
+	for atomic.LoadInt32(&i.activeWorkers) > i.fileConfig.MaxWorkers {
 		time.Sleep(100 * time.Millisecond)
 	}
 }
@@ -124,22 +115,8 @@ func (i *Invalidator) Add(e Entry) {
 
 // Start ...
 func (i *Invalidator) Start() {
-	go func() {
-		if err := i.ListenAndServe(); err != nil {
-			panic(err)
-		}
-
-	}()
-
 	for e := range i.chEntries {
 		i.waitAvailableWorkers()
 		go i.invalidate(e)
 	}
-}
-
-// ListenAndServe ...
-func (i *Invalidator) ListenAndServe() error {
-	i.log.Infof("Listening on: %s://%s/", i.serverHTTPScheme, i.cfg.Addr)
-
-	return i.server.ListenAndServe(i.cfg.Addr)
 }

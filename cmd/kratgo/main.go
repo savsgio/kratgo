@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 
-	"github.com/savsgio/kratgo/internal/proxy"
-	"github.com/savsgio/kratgo/internal/proxy/config"
+	"github.com/savsgio/kratgo/internal/config"
+	"github.com/savsgio/kratgo/internal/kratgo"
 )
 
 var configFilePath string
@@ -20,12 +20,12 @@ func main() {
 		panic(err)
 	}
 
-	p, err := proxy.New(*cfg)
+	kratgo, err := kratgo.New(*cfg)
 	if err != nil {
 		panic(err)
 	}
 
-	if err = p.ListenAndServe(); err != nil {
+	if err = kratgo.ListenAndServe(); err != nil {
 		panic(err)
 	}
 }

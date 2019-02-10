@@ -1,23 +1,34 @@
 package proxy
 
 import (
-	"os"
+	"io"
 	"sync"
 
 	"github.com/savsgio/kratgo/internal/cache"
-	"github.com/savsgio/kratgo/internal/invalidator"
-	"github.com/savsgio/kratgo/internal/proxy/config"
+	"github.com/savsgio/kratgo/internal/config"
 
 	logger "github.com/savsgio/go-logger"
 	"github.com/savsgio/govaluate/v3"
 	"github.com/valyala/fasthttp"
 )
 
+// Config ...
+type Config struct {
+	FileConfig config.Proxy
+	Cache      *cache.Cache
+
+	HTTPScheme string
+
+	LogLevel  string
+	LogOutput io.Writer
+}
+
 // Proxy ...
 type Proxy struct {
-	server      *fasthttp.Server
-	cache       *cache.Cache
-	invalidator *invalidator.Invalidator
+	fileConfig config.Proxy
+
+	server *fasthttp.Server
+	cache  *cache.Cache
 
 	backends       []fetcher
 	totalBackends  int
@@ -28,14 +39,9 @@ type Proxy struct {
 	nocacheRules []rule
 	headersRules []headerRule
 
-	log     *logger.Logger
-	logFile *os.File
-
+	log   *logger.Logger
 	tools sync.Pool
-
-	cfg config.Config
-
-	mu sync.RWMutex
+	mu    sync.RWMutex
 }
 
 type proxyTools struct {

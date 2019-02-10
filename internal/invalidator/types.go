@@ -3,17 +3,16 @@ package invalidator
 import (
 	"io"
 
+	"github.com/savsgio/kratgo/internal/config"
+
 	logger "github.com/savsgio/go-logger"
 	"github.com/savsgio/kratgo/internal/cache"
-	"github.com/valyala/fasthttp"
 )
 
 // Config ...
 type Config struct {
-	Addr string
-
+	FileConfig config.Invalidator
 	Cache      *cache.Cache
-	MaxWorkers int32
 
 	LogLevel  string
 	LogOutput io.Writer
@@ -21,17 +20,14 @@ type Config struct {
 
 // Invalidator ...
 type Invalidator struct {
-	server *fasthttp.Server
-	cache  *cache.Cache
+	fileConfig config.Invalidator
 
-	maxWorkers    int32
+	cache *cache.Cache
+
 	activeWorkers int32
-
-	serverHTTPScheme string
 
 	chEntries chan Entry
 	log       *logger.Logger
-	cfg       Config
 }
 
 // Header ...

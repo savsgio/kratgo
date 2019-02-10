@@ -4,80 +4,43 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
-
-	"github.com/savsgio/kratgo/internal/cache"
-	"github.com/savsgio/kratgo/internal/invalidator"
-	"github.com/savsgio/kratgo/internal/proxy/config"
 
 	logger "github.com/savsgio/go-logger"
+	"github.com/savsgio/kratgo/internal/cache"
+	"github.com/savsgio/kratgo/internal/config"
+
 	"github.com/savsgio/govaluate/v3"
 	"github.com/valyala/fasthttp"
 )
 
 // New ...
-func New(cfg config.Config) (*Proxy, error) {
+func New(cfg Config) (*Proxy, error) {
 	p := new(Proxy)
+	p.fileConfig = cfg.FileConfig
 
-	logOutput, err := getLogOutput(cfg.LogOutput)
-	if err != nil {
-		return nil, err
-	}
+	log := logger.New("kratgo", cfg.LogLevel, cfg.LogOutput)
 
-	log := logger.New("kratgo", cfg.LogLevel, logOutput)
-
-	s := &fasthttp.Server{
+	p.server = &fasthttp.Server{
 		Handler: p.handler,
 		Name:    "Kratgo",
 		Logger:  log,
 	}
 
-	cacheVerbose := cfg.LogLevel == logger.DEBUG
-	cacheCleanFrequency := cfg.Cache.CleanFrequency
-	if cacheCleanFrequency == 0 {
-		return nil, fmt.Errorf("Cache.CleanFrequency configuration must be greater than 0")
-	}
+	p.cache = cfg.Cache
+	p.httpScheme = cfg.HTTPScheme
+	p.log = log
 
-	c, err := cache.New(cache.Config{
-		TTL:              cfg.Cache.TTL * time.Minute,
-		CleanFrequency:   cacheCleanFrequency * time.Minute,
-		MaxEntries:       cfg.Cache.MaxEntries,
-		MaxEntrySize:     cfg.Cache.MaxEntrySize,
-		HardMaxCacheSize: cfg.Cache.HardMaxCacheSize,
-		Verbose:          cacheVerbose,
-		LogLevel:         cfg.LogLevel,
-		LogOutput:        logOutput,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	i := invalidator.New(invalidator.Config{
-		Addr:       cfg.Invalidator.Addr,
-		Cache:      c,
-		MaxWorkers: cfg.Invalidator.MaxWorkers,
-		LogLevel:   cfg.LogLevel,
-		LogOutput:  logOutput,
-	})
-
-	if len(cfg.Proxy.BackendsAddrs) == 0 {
+	if len(p.fileConfig.BackendsAddrs) == 0 {
 		return nil, fmt.Errorf("Proxy.BackendsAddrs configuration is mandatory")
 	}
 
-	p.backends = make([]fetcher, len(cfg.Proxy.BackendsAddrs))
-	for i, addr := range cfg.Proxy.BackendsAddrs {
+	p.backends = make([]fetcher, len(p.fileConfig.BackendsAddrs))
+	for i, addr := range p.fileConfig.BackendsAddrs {
 		p.backends[i] = &fasthttp.HostClient{
 			Addr: addr,
 		}
 	}
-	p.totalBackends = len(cfg.Proxy.BackendsAddrs)
-
-	p.server = s
-	p.cache = c
-	p.invalidator = i
-	p.httpScheme = defaultHTTPScheme
-	p.log = log
-	p.cfg = cfg
+	p.totalBackends = len(p.fileConfig.BackendsAddrs)
 
 	p.tools = sync.Pool{
 		New: func() interface{} {
@@ -89,15 +52,15 @@ func New(cfg config.Config) (*Proxy, error) {
 		},
 	}
 
-	if err = p.parseNocacheRules(); err != nil {
+	if err := p.parseNocacheRules(); err != nil {
 		return nil, err
 	}
 
-	if err = p.parseHeadersRules(setHeaderAction, p.cfg.Proxy.Response.Headers.Set); err != nil {
+	if err := p.parseHeadersRules(setHeaderAction, p.fileConfig.Response.Headers.Set); err != nil {
 		return nil, err
 	}
 
-	if err = p.parseHeadersRules(unsetHeaderAction, p.cfg.Proxy.Response.Headers.Unset); err != nil {
+	if err := p.parseHeadersRules(unsetHeaderAction, p.fileConfig.Response.Headers.Unset); err != nil {
 		return nil, err
 	}
 
@@ -154,7 +117,7 @@ func (p *Proxy) newEvaluableExpression(rule string) (*govaluate.EvaluableExpress
 }
 
 func (p *Proxy) parseNocacheRules() error {
-	for _, ncRule := range p.cfg.Proxy.Nocache {
+	for _, ncRule := range p.fileConfig.Nocache {
 		r := rule{}
 
 		expr, params, err := p.newEvaluableExpression(ncRule)
@@ -294,11 +257,7 @@ func (p *Proxy) handler(ctx *fasthttp.RequestCtx) {
 
 // ListenAndServe ...
 func (p *Proxy) ListenAndServe() error {
-	defer p.logFile.Close()
+	p.log.Infof("Listening on: %s://%s/", p.httpScheme, p.fileConfig.Addr)
 
-	go p.invalidator.Start()
-
-	p.log.Infof("Listening on: %s://%s/", p.httpScheme, p.cfg.Proxy.Addr)
-
-	return p.server.ListenAndServe(p.cfg.Proxy.Addr)
+	return p.server.ListenAndServe(p.fileConfig.Addr)
 }

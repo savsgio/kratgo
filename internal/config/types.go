@@ -4,9 +4,10 @@ import "time"
 
 // Config ...
 type Config struct {
-	Proxy       Proxy       `yaml:"proxy"`
 	Cache       Cache       `yaml:"cache"`
 	Invalidator Invalidator `yaml:"invalidator"`
+	Proxy       Proxy       `yaml:"proxy"`
+	Admin       Admin       `yaml:"admin"`
 
 	LogLevel  string `yaml:"logLevel"`
 	LogOutput string `yaml:"logOutput"`
@@ -49,6 +50,10 @@ type Cache struct {
 
 // Invalidator ...
 type Invalidator struct {
-	Addr       string `yaml:"addr"`
-	MaxWorkers int32  `yaml:"maxWorkers"`
+	MaxWorkers int32 `yaml:"maxWorkers"`
+}
+
+// Admin ...
+type Admin struct {
+	Addr string `yaml:"addr"`
 }

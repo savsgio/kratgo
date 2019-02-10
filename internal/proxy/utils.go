@@ -2,13 +2,11 @@ package proxy
 
 import (
 	"fmt"
-	"os"
-	"path"
 	"strconv"
 	"strings"
 
 	"github.com/savsgio/gotils"
-	"github.com/savsgio/kratgo/internal/proxy/config"
+	"github.com/savsgio/kratgo/internal/config"
 	"github.com/valyala/fasthttp"
 )
 
@@ -53,24 +51,6 @@ func stringSliceInclude(vs []string, t string) bool {
 	return stringSliceIndexOf(vs, t) >= 0
 }
 
-// LOG
-
-func getLogOutput(output string) (*os.File, error) {
-	if output == "" {
-		return nil, fmt.Errorf("Invalid log output: '%s'", output)
-
-	} else if output == "console" {
-		return os.Stderr, nil
-	}
-
-	dirPath, _ := path.Split(output)
-	if err := os.MkdirAll(dirPath, os.ModeDir); err != nil {
-		return nil, err
-	}
-	return os.OpenFile(output, os.O_CREATE|os.O_WRONLY, 0755)
-
-}
-
 // HTTP
 
 func cloneHeaders(dst, src *fasthttp.RequestHeader) {
@@ -110,9 +90,6 @@ func getEvalValue(req *fasthttp.Request, resp *fasthttp.Response, name, key stri
 	value := name
 
 	switch name {
-	case config.EvalVersionVar:
-		value = version
-
 	case config.EvalMethodVar:
 		value = gotils.B2S(req.Header.Method())
 

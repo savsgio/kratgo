@@ -1,6 +1,5 @@
 package config
 
-const configVersionVar = "$(version)"
 const configMethodVar = "$(method)"
 const configHostVar = "$(host)"
 const configPathVar = "$(path)"
@@ -12,9 +11,6 @@ const configCookieVar = "$(cookie::<NAME>)"
 
 // EvalVarPrefix ...
 const EvalVarPrefix = "Krat"
-
-// EvalVersionVar ...
-const EvalVersionVar = EvalVarPrefix + "VERSION"
 
 // EvalMethodVar ...
 const EvalMethodVar = EvalVarPrefix + "METHOD"

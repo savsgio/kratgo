@@ -1,46 +1,47 @@
-package invalidator
+package admin
 
 import (
 	"fmt"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/savsgio/gotils"
+	"github.com/savsgio/kratgo/internal/invalidator"
 	"github.com/valyala/fasthttp"
 )
 
-func (i *Invalidator) httpHandler(ctx *fasthttp.RequestCtx) {
+func (a *Admin) httpHandler(ctx *fasthttp.RequestCtx) {
 	path := gotils.B2S(ctx.Path())
 
-	if i.log.DebugEnabled() {
-		i.log.Debugf("%s - %s", ctx.Method(), path)
+	if a.log.DebugEnabled() {
+		a.log.Debugf("%s - %s", ctx.Method(), path)
 	}
 
 	if !ctx.IsPost() {
 		err := fmt.Errorf("Invalid request method: %s", ctx.Method())
-		i.log.Info(err)
+		a.log.Info(err)
 		ctx.Error(err.Error(), fasthttp.StatusBadRequest)
 		return
 	}
 
 	switch path {
 	case "/invalidate/":
-		entry := AcquireEntry()
+		entry := invalidator.AcquireEntry()
 		body := ctx.PostBody()
 
-		if i.log.DebugEnabled() {
-			i.log.Debugf("Invalidation received: %s", body)
+		if a.log.DebugEnabled() {
+			a.log.Debugf("Invalidation received: %s", body)
 		}
 
 		err := jsoniter.Unmarshal(body, entry)
 		if err != nil {
 			ctx.Error(err.Error(), fasthttp.StatusBadRequest)
-			ReleaseEntry(entry)
+			invalidator.ReleaseEntry(entry)
 			return
 		}
 
-		i.Add(*entry)
+		a.invalidator.Add(*entry)
 
-		ReleaseEntry(entry)
+		invalidator.ReleaseEntry(entry)
 
 		ctx.SetBodyString("OK")
 

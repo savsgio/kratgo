@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/savsgio/gotils"
-	"github.com/savsgio/kratgo/internal/proxy/config"
+	"github.com/savsgio/kratgo/internal/config"
 	"github.com/valyala/fasthttp"
 )
 

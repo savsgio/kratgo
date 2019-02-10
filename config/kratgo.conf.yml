@@ -6,7 +6,6 @@
 
 # --- Variables ---
 
-# $(version) : kratgo version
 # $(method) : request method
 # $(host) : request host
 # $(path) : request path
@@ -55,11 +54,9 @@ cache:
   hardMaxCacheSize: 0
 
 # --- Invalidator ---
-# addr: IP and Port of invalidation api
 # maxWorkers: Maximum workers to execute invalidations
 
 invalidator:
-  addr: 0.0.0.0:6082
   maxWorkers: 5
 
 # --- Proxy ---
@@ -85,7 +82,7 @@ proxy:
     headers:
       set:
         - name: X-Kratgo
-          value: $(version)
+          value: "true"
 
       unset:
         - name: Set-Cookie
@@ -93,3 +90,9 @@ proxy:
 
   nocache:
     - $(req.header::X-Requested-With) == 'XMLHttpRequest'
+
+# --- Admin ---
+# addr: IP and Port of admin api
+
+admin:
+  addr: 0.0.0.0:6082

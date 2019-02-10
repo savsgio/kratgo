@@ -3,32 +3,45 @@ package cache
 import (
 	"time"
 
+	"github.com/savsgio/kratgo/internal/config"
+
 	"github.com/allegro/bigcache"
 	logger "github.com/savsgio/go-logger"
 	"github.com/savsgio/gotils"
 )
 
-func bigcacheConfig(config Config) bigcache.Config {
+func bigcacheConfig(cfg config.Cache) bigcache.Config {
 	return bigcache.Config{
 		Shards:             1024,
-		LifeWindow:         config.TTL,
-		CleanWindow:        30 * time.Second,
-		MaxEntriesInWindow: 1000 * 10 * 60,
-		MaxEntrySize:       500,
+		LifeWindow:         cfg.TTL * time.Minute,
+		CleanWindow:        cfg.CleanFrequency * time.Minute,
+		MaxEntriesInWindow: cfg.MaxEntries,
+		MaxEntrySize:       cfg.MaxEntrySize,
 		Verbose:            false,
-		HardMaxCacheSize:   0,
-		Logger:             logger.New("kratgo-cache", config.LogLevel, config.LogOutput),
+		HardMaxCacheSize:   cfg.HardMaxCacheSize,
 	}
 }
 
 // New ...
-func New(config Config) (*Cache, error) {
-	bc, err := bigcache.NewBigCache(bigcacheConfig(config))
+func New(cfg Config) (*Cache, error) {
+	c := new(Cache)
+
+	c.fileConfig = cfg.FileConfig
+
+	log := logger.New("kratgo-cache", cfg.LogLevel, cfg.LogOutput)
+
+	bigcacheCFG := bigcacheConfig(c.fileConfig)
+	bigcacheCFG.Logger = log
+	bigcacheCFG.Verbose = cfg.LogLevel == logger.DEBUG
+
+	bc, err := bigcache.NewBigCache(bigcacheCFG)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Cache{bc: bc}, nil
+	c.bc = bc
+
+	return c, nil
 }
 
 // Set ...
