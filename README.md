@@ -34,9 +34,9 @@ The binary file will install in `/usr/local/bin/kratgo` and configuration file i
 
 ### Cache invalidation
 
-The cache invalidation is available via API. The API's address is configured in `invalidator` section of the configuration file.
+The cache invalidation is available via API. The API's address is configured in `admin` section of the configuration file.
 
-This API only accepts `POST` requests with a `json` in request's body, under the path `/invalidate/`.
+This API only accepts ***POST*** requests with a ***json*** in request's body, under the path `/invalidate/`.
 
 Ex: `http://localhost:6082/invalidate/`
 
