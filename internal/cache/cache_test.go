@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"fmt"
 	"os"
 	"reflect"
 	"testing"
@@ -39,8 +38,6 @@ func fileConfigCache() config.Cache {
 func Test_bigcacheConfig(t *testing.T) {
 	cfg := fileConfigCache()
 	bcConfig := bigcacheConfig(cfg)
-
-	fmt.Println(bcConfig)
 
 	if bcConfig.Shards != defaultBigcacheShards {
 		t.Errorf("bigcacheConfig() Shards == '%d', want '%d'", bcConfig.Shards, defaultBigcacheShards)

@@ -15,7 +15,7 @@ import (
 type Config struct {
 	FileConfig  config.Admin
 	Cache       *cache.Cache
-	Invalidator *invalidator.Invalidator
+	Invalidator Invalidator
 
 	HTTPScheme string
 
@@ -29,9 +29,17 @@ type Admin struct {
 
 	server      *atreugo.Atreugo
 	cache       *cache.Cache
-	invalidator *invalidator.Invalidator
+	invalidator Invalidator
 
 	httpScheme string
 
 	log *logger.Logger
+}
+
+// ###### INTERFACES ######
+
+// Invalidator ...
+type Invalidator interface {
+	Start()
+	Add(e invalidator.Entry)
 }
