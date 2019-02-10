@@ -14,7 +14,9 @@ func New(cfg Config) (*Admin, error) {
 	a := new(Admin)
 	a.fileConfig = cfg.FileConfig
 
-	log := logger.New("kratgo-admin", cfg.LogLevel, cfg.LogOutput)
+	logName := "kratgo-admin"
+
+	log := logger.New(logName, cfg.LogLevel, cfg.LogOutput)
 
 	addr := strings.Split(cfg.FileConfig.Addr, ":")
 	port, err := strconv.Atoi(addr[1])
@@ -23,8 +25,9 @@ func New(cfg Config) (*Admin, error) {
 	}
 
 	a.server = atreugo.New(&atreugo.Config{
-		Host: addr[0],
-		Port: port,
+		Host:    addr[0],
+		Port:    port,
+		LogName: logName,
 	})
 	a.server.SetLogOutput(cfg.LogOutput)
 

@@ -14,8 +14,8 @@ github.com/modern-go/reflect2 v1.0.1 h1:9f412s+6RmYXLWZSEzVVgPGK7C2PphHj5RJrvfx9
 github.com/modern-go/reflect2 v1.0.1/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
 github.com/philhofer/fwd v1.0.0 h1:UbZqGr5Y38ApvM/V/jEljVxwocdweyH+vmYvRPBnbqQ=
 github.com/philhofer/fwd v1.0.0/go.mod h1:gk3iGcWd9+svBvR0sR+KPcfE+RNWozjowpeBVG3ZVNU=
-github.com/savsgio/atreugo/v7 v7.0.0 h1:tDcqZ3DY1JQkF9hgKeLVoSn7yRlvFU4BaGc2uUgLo3w=
-github.com/savsgio/atreugo/v7 v7.0.0/go.mod h1:utJ7MTC1JdWPexy6ups1wdMSDQ3rmnHsQx76TKxpfwg=
+github.com/savsgio/atreugo/v7 v7.1.0 h1:8fL0qk/K6hpQmcO0FQe8hoR0doBUCerSs7swMErPPF8=
+github.com/savsgio/atreugo/v7 v7.1.0/go.mod h1:utJ7MTC1JdWPexy6ups1wdMSDQ3rmnHsQx76TKxpfwg=
 github.com/savsgio/go-logger v1.0.0 h1:jiaRvohRr8RwtcK/WDcA/Yp4eaPaarAko3JNPzt1xoQ=
 github.com/savsgio/go-logger v1.0.0/go.mod h1:/ZzTTmB3JJqjZQcLlxTGbwy3fIsLUoYyldsSEL5rU2g=
 github.com/savsgio/gotils v0.0.0-20181217102925-dc772c0d89a4 h1:NxZM/YEOq7/NjewVUB8Vx+nHsxv/zqS5n8IlUaqxSoI=
