@@ -2,15 +2,24 @@ package kratgo
 
 import (
 	"os"
-
-	"github.com/savsgio/kratgo/internal/admin"
-	"github.com/savsgio/kratgo/internal/proxy"
 )
 
 // Kratgo ...
 type Kratgo struct {
-	Proxy *proxy.Proxy
-	Admin *admin.Admin
+	Proxy ProxyServer
+	Admin AdminServer
 
 	logFile *os.File
+}
+
+// ###### INTERFACES ######
+
+// ProxyServer ...
+type ProxyServer interface {
+	ListenAndServe() error
+}
+
+// AdminServer ...
+type AdminServer interface {
+	ListenAndServe() error
 }
