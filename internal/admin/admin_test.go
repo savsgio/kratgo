@@ -59,10 +59,12 @@ func (mock *mockInvalidator) Start() {
 	mock.mu.Unlock()
 }
 
-func (mock *mockInvalidator) Add(e invalidator.Entry) {
+func (mock *mockInvalidator) Add(e invalidator.Entry) error {
 	mock.mu.Lock()
 	mock.addCalled = true
 	mock.mu.Unlock()
+
+	return nil
 }
 
 func (mock *mockServer) ListenAndServe() error {
