@@ -27,7 +27,7 @@ type Config struct {
 type Proxy struct {
 	fileConfig config.Proxy
 
-	server *fasthttp.Server
+	server server
 	cache  *cache.Cache
 
 	backends       []fetcher
@@ -88,4 +88,9 @@ type headerRule struct {
 
 type fetcher interface {
 	Do(req *fasthttp.Request, resp *fasthttp.Response) error
+}
+
+// Server ...
+type server interface {
+	ListenAndServe(addr string) error
 }

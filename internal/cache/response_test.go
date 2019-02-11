@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"bytes"
 	"testing"
 )
 
@@ -46,31 +47,23 @@ func TestResponse_appendHeader(t *testing.T) {
 }
 
 func TestResponse_SetHeader(t *testing.T) {
-	type fields struct {
-		Path    []byte
-		Body    []byte
-		Headers []ResponseHeader
+	r := getResponseTest()
+
+	k := []byte("newKey")
+	v := []byte("newValue")
+
+	r.SetHeader(k, v)
+
+	finded := false
+	for _, h := range r.Headers {
+		if bytes.Equal(h.Key, k) && bytes.Equal(h.Value, v) {
+			finded = true
+			break
+		}
 	}
-	type args struct {
-		k []byte
-		v []byte
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := &Response{
-				Path:    tt.fields.Path,
-				Body:    tt.fields.Body,
-				Headers: tt.fields.Headers,
-			}
-			r.SetHeader(tt.args.k, tt.args.v)
-		})
+
+	if !finded {
+		t.Errorf("The header '%s==%s' has not been set", k, v)
 	}
 }
 

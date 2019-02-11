@@ -6,7 +6,9 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/savsgio/kratgo/internal/cache"
 	"github.com/savsgio/kratgo/internal/config"
@@ -14,6 +16,13 @@ import (
 	logger "github.com/savsgio/go-logger"
 	"github.com/valyala/fasthttp"
 )
+
+type mockServer struct {
+	addr                 string
+	listenAndServeCalled bool
+
+	mu sync.RWMutex
+}
 
 var testCache *cache.Cache
 
@@ -34,6 +43,17 @@ func init() {
 	}
 
 	testCache = c
+}
+
+func (mock *mockServer) ListenAndServe(addr string) error {
+	mock.mu.Lock()
+	mock.addr = addr
+	mock.listenAndServeCalled = true
+	mock.mu.Unlock()
+
+	time.Sleep(250 * time.Millisecond)
+
+	return nil
 }
 
 func testConfig() Config {
@@ -702,6 +722,31 @@ func TestProxy_handler(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestProxy_ListenAndServe(t *testing.T) {
+	serverMock := new(mockServer)
+	addr := "localhost:9999"
+
+	p, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.fileConfig.Addr = addr
+	p.server = serverMock
+
+	p.ListenAndServe()
+
+	serverMock.mu.RLock()
+	defer serverMock.mu.RUnlock()
+	if !serverMock.listenAndServeCalled {
+		t.Error("Proxy.ListenAndServe() invalidator is not start")
+	}
+
+	if serverMock.addr != addr {
+		t.Errorf("Proxy.ListenAndServe() addr == '%s', want '%s'", serverMock.addr, addr)
+	}
+
 }
 
 func BenchmarkHandler(b *testing.B) {
