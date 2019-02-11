@@ -10,10 +10,11 @@ import (
 func TestAdmin_invalidateView(t *testing.T) {
 	invalidatorMock := new(mockInvalidator)
 
-	admin, err := New(testConfig(invalidatorMock))
+	admin, err := New(testConfig())
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
+	admin.invalidator = invalidatorMock
 
 	ctx := new(fasthttp.RequestCtx)
 	actx := new(atreugo.RequestCtx)

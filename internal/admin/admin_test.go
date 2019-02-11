@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 
@@ -40,23 +41,35 @@ type mockServer struct {
 	logOutput            io.Writer
 
 	paths []Path
+
+	mu sync.RWMutex
 }
 
 type mockInvalidator struct {
 	addCalled   bool
 	startCalled bool
+
+	mu sync.RWMutex
 }
 
 func (mock *mockInvalidator) Start() {
+	mock.mu.Lock()
 	mock.startCalled = true
+	mock.mu.Unlock()
 }
 
 func (mock *mockInvalidator) Add(e invalidator.Entry) {
+	mock.mu.Lock()
 	mock.addCalled = true
+	mock.mu.Unlock()
 }
 
 func (mock *mockServer) ListenAndServe() error {
+	mock.mu.Lock()
 	mock.listenAndServeCalled = true
+	mock.mu.Unlock()
+
+	time.Sleep(250 * time.Millisecond)
 
 	return nil
 }
@@ -99,11 +112,11 @@ func fileConfigCache() config.Cache {
 	}
 }
 
-func testConfig(invalidatorMock Invalidator) Config {
+func testConfig() Config {
 	return Config{
 		FileConfig:  fileConfigAdmin(),
 		Cache:       testCache,
-		Invalidator: invalidatorMock,
+		Invalidator: nil,
 		HTTPScheme:  "http",
 		LogLevel:    "error",
 		LogOutput:   os.Stderr,
@@ -154,13 +167,14 @@ func TestAdmin_ListenAndServe(t *testing.T) {
 
 	admin.ListenAndServe()
 
-	// Sleep to wait the gorutine start
-	time.Sleep(500 * time.Millisecond)
-
+	invalidatorMock.mu.RLock()
+	defer invalidatorMock.mu.RUnlock()
 	if !invalidatorMock.startCalled {
 		t.Error("Admin.ListenAndServe() invalidator is not start")
 	}
 
+	serverMock.mu.RLock()
+	defer serverMock.mu.RUnlock()
 	if !serverMock.listenAndServeCalled {
 		t.Error("Admin.ListenAndServe() server is not listening")
 	}
