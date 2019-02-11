@@ -1,9 +1,10 @@
 package admin
 
 import (
+	"github.com/savsgio/kratgo/internal/invalidator"
+
 	jsoniter "github.com/json-iterator/go"
 	"github.com/savsgio/atreugo/v7"
-	"github.com/savsgio/kratgo/internal/invalidator"
 )
 
 func (a *Admin) invalidateView(ctx *atreugo.RequestCtx) error {

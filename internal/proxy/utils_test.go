@@ -5,9 +5,10 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/savsgio/kratgo/internal/config"
+
 	"github.com/klauspost/compress/gzip"
 	"github.com/klauspost/compress/zlib"
-	"github.com/savsgio/kratgo/internal/config"
 	"github.com/valyala/fasthttp"
 )
 

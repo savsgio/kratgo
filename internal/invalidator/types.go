@@ -3,10 +3,10 @@ package invalidator
 import (
 	"io"
 
+	"github.com/savsgio/kratgo/internal/cache"
 	"github.com/savsgio/kratgo/internal/config"
 
 	logger "github.com/savsgio/go-logger"
-	"github.com/savsgio/kratgo/internal/cache"
 )
 
 // Config ...

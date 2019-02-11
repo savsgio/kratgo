@@ -6,8 +6,9 @@ import (
 	"testing"
 	"time"
 
-	logger "github.com/savsgio/go-logger"
 	"github.com/savsgio/kratgo/internal/config"
+
+	logger "github.com/savsgio/go-logger"
 )
 
 var testCache *Cache
