@@ -41,7 +41,7 @@ type Admin struct {
 // Invalidator ...
 type Invalidator interface {
 	Start()
-	Add(e invalidator.Entry)
+	Add(e invalidator.Entry) error
 }
 
 // Server ...

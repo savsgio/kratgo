@@ -21,7 +21,11 @@ func (a *Admin) invalidateView(ctx *atreugo.RequestCtx) error {
 		return err
 	}
 
-	a.invalidator.Add(*entry)
+	if err = a.invalidator.Add(*entry); err != nil {
+		a.log.Errorf("Could not add a invalidation entry '%s': %v", body, err)
+		invalidator.ReleaseEntry(entry)
+		return ctx.TextResponse(err.Error(), 400)
+	}
 
 	invalidator.ReleaseEntry(entry)
 

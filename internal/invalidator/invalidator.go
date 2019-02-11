@@ -109,8 +109,16 @@ func (i *Invalidator) invalidate(e Entry) {
 }
 
 // Add ..
-func (i *Invalidator) Add(e Entry) {
+func (i *Invalidator) Add(e Entry) error {
+	if e.Action != actionDelete {
+		return errInvalidAction
+	} else if e.Host == "" && e.Path == "" && e.Header.Key == "" {
+		return errEmptyFields
+	}
+
 	i.chEntries <- e
+
+	return nil
 }
 
 // Start ...
