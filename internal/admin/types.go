@@ -27,7 +27,7 @@ type Config struct {
 type Admin struct {
 	fileConfig config.Admin
 
-	server      *atreugo.Atreugo
+	server      Server
 	cache       *cache.Cache
 	invalidator Invalidator
 
@@ -42,4 +42,11 @@ type Admin struct {
 type Invalidator interface {
 	Start()
 	Add(e invalidator.Entry)
+}
+
+// Server ...
+type Server interface {
+	ListenAndServe() error
+	Path(httpMethod string, url string, viewFn atreugo.View)
+	SetLogOutput(output io.Writer)
 }
