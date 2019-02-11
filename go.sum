@@ -1,5 +1,5 @@
-github.com/allegro/bigcache v1.1.1-0.20190116153254-84a0ff3f153c h1:JnxT952szw65TwPg7iz1iYVqEoikvX8mSkSgIhNr0Vo=
-github.com/allegro/bigcache v1.1.1-0.20190116153254-84a0ff3f153c/go.mod h1:Cb/ax3seSYIx7SuZdm2G2xzfwmv3TPSk2ucNfQESPXM=
+github.com/allegro/bigcache v1.2.0 h1:qDaE0QoF29wKBb3+pXFrJFy1ihe5OT9OiXhg1t85SxM=
+github.com/allegro/bigcache v1.2.0/go.mod h1:Cb/ax3seSYIx7SuZdm2G2xzfwmv3TPSk2ucNfQESPXM=
 github.com/fasthttp/router v0.3.2 h1:KEYfCRnT9oLG66yEsINUkqFntea5yJIlWynYiR2NnPU=
 github.com/fasthttp/router v0.3.2/go.mod h1:wF1teMmwB7qKWzC48vEHt0sjLJMXCGnypbM+zB4ao2g=
 github.com/json-iterator/go v1.1.5 h1:gL2yXlmiIo4+t+y32d4WGwOjKGYcGOuyrg46vadswDE=
@@ -18,8 +18,9 @@ github.com/savsgio/atreugo/v7 v7.1.0 h1:8fL0qk/K6hpQmcO0FQe8hoR0doBUCerSs7swMErP
 github.com/savsgio/atreugo/v7 v7.1.0/go.mod h1:utJ7MTC1JdWPexy6ups1wdMSDQ3rmnHsQx76TKxpfwg=
 github.com/savsgio/go-logger v1.0.0 h1:jiaRvohRr8RwtcK/WDcA/Yp4eaPaarAko3JNPzt1xoQ=
 github.com/savsgio/go-logger v1.0.0/go.mod h1:/ZzTTmB3JJqjZQcLlxTGbwy3fIsLUoYyldsSEL5rU2g=
-github.com/savsgio/gotils v0.0.0-20181217102925-dc772c0d89a4 h1:NxZM/YEOq7/NjewVUB8Vx+nHsxv/zqS5n8IlUaqxSoI=
 github.com/savsgio/gotils v0.0.0-20181217102925-dc772c0d89a4/go.mod h1:w803/Fg1m0hrp1ZT9KNfQe4E4+WOMMFLcgzPvOcye10=
+github.com/savsgio/gotils v0.0.0-20190210195551-a1aee1d83e72 h1:JEOaM8cQH5Z237uAdMAF6YXMcZXtaiTD2NECYwrYHl0=
+github.com/savsgio/gotils v0.0.0-20190210195551-a1aee1d83e72/go.mod h1:w803/Fg1m0hrp1ZT9KNfQe4E4+WOMMFLcgzPvOcye10=
 github.com/savsgio/govaluate/v3 v3.0.0 h1:nilYfq6DyMQvy/++E42NW+s56k0I5jgqjm5IRtrwRfc=
 github.com/savsgio/govaluate/v3 v3.0.0/go.mod h1:4hnQJKZBjiFt7RfuNjx5tmXs1yL6BhtP5j4OmZHm4C0=
 github.com/tinylib/msgp v1.1.0 h1:9fQd+ICuRIu/ue4vxJZu6/LzxN0HwMds2nq/0cFvxHU=
