@@ -12,6 +12,8 @@ os:
   - osx
 
 before_install:
+  - go get -u -v code.google.com/p/go.tools/cmd/cover
+  - go get -u -v github.com/modocache/gover
   - go get -u -v github.com/mattn/goveralls
   - go get -v ./cmd/...
 
@@ -24,7 +26,8 @@ script:
   - GOARCH=386 go build ./cmd/...
 
    # run tests with the race detector
-  - go test -v -race ./...
+  - go test -v -cover -race -coverprofile=all.coverprofile ./...
 
   # run tests
-  - $GOPATH/bin/goveralls -v -service=travis-ci
+  - $HOME/gopath/bin/gover
+  - $HOME/gopath/bin/goveralls -coverprofile=gover.coverprofile -service travis-ci
