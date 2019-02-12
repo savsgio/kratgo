@@ -40,31 +40,12 @@ This API only accepts ***POST*** requests with a ***json*** in request's body, u
 
 Ex: `http://localhost:6082/invalidate/`
 
-There are three options to invalidate:
-
-- By host:
+The complete json body must be as following example:
 
 ```json
 {
-	"action": "delete",
-	"host": "www.example.com"
-}
-```
-
- - By path:
-
-```json
-{
-	"action": "delete",
-	"path": "/news/"
-}
-```
-
-- By header:
-
-```json
-{
-	"action": "delete",
+	"host": "www.example.com",
+	"path": "/es/",
 	"header": {
 		"key": "Content-Type",
 		"value": "text/plain; charset=utf-8"
@@ -72,7 +53,7 @@ There are three options to invalidate:
 }
 ```
 
-*The `action` field always be equal to `delete`.*
+**IMPORTANT:** *All fields are optional, but at least you need to specify one.*
 
 All invalidations will process by workers in Kratgo. You can configure the maximum available workers in the configuration.
 

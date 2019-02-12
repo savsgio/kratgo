@@ -6,9 +6,8 @@ import (
 
 func getEntryTest() Entry {
 	return Entry{
-		Action: "delete",
-		Host:   "www.kratgo.com",
-		Path:   "/fast/",
+		Host: "www.kratgo.com",
+		Path: "/fast/",
 		Header: Header{
 			Key:   "X-Data",
 			Value: "1",
@@ -20,10 +19,6 @@ func TestHeader_Reset(t *testing.T) {
 	e := getEntryTest()
 
 	e.Reset()
-
-	if e.Action != "" {
-		t.Errorf("Entry.Action has not been reset")
-	}
 
 	if e.Host != "" {
 		t.Errorf("Entry.Host has not been reset")

@@ -1,6 +1,9 @@
 package cache
 
-import "sync"
+import (
+	"bytes"
+	"sync"
+)
 
 var responsePool = sync.Pool{
 	New: func() interface{} {
@@ -38,6 +41,18 @@ func (r *Response) appendHeader(data []ResponseHeader, k, v []byte) []ResponseHe
 	h.Value = append(h.Value[:0], v...)
 
 	return data
+}
+
+// HasHeader ...
+func (r *Response) HasHeader(k, v []byte) bool {
+	for i, n := 0, len(r.Headers); i < n; i++ {
+		h := &r.Headers[i]
+		if bytes.Equal(h.Key, k) && bytes.Equal(h.Value, v) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // SetHeader ...

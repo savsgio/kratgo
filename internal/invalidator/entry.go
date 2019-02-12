@@ -27,7 +27,6 @@ func (h *Header) Reset() {
 
 // Reset ...
 func (e *Entry) Reset() {
-	e.Action = ""
 	e.Host = ""
 	e.Path = ""
 

@@ -67,6 +67,19 @@ func TestResponse_SetHeader(t *testing.T) {
 	}
 }
 
+func TestResponse_HasHeader(t *testing.T) {
+	r := getResponseTest()
+
+	k := []byte("newKey")
+	v := []byte("newValue")
+
+	r.SetHeader(k, v)
+
+	if !r.HasHeader(k, v) {
+		t.Errorf("The header '%s = %s' not found", k, v)
+	}
+}
+
 func TestResponse_Reset(t *testing.T) {
 	r := getResponseTest()
 

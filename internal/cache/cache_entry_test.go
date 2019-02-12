@@ -117,6 +117,16 @@ func TestEntry_GetAllResponses(t *testing.T) {
 	}
 }
 
+func TestEntry_Len(t *testing.T) {
+	e := getEntryTest()
+
+	length := len(e.GetAllResponses())
+
+	if e.Len() != length {
+		t.Errorf("Entry.Len() == '%d', want '%d'", e.Len(), length)
+	}
+}
+
 func TestEntry_GetResponse(t *testing.T) {
 	e := getEntryTest()
 	r1 := e.Responses[0]

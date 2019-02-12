@@ -73,6 +73,11 @@ func (e Entry) GetAllResponses() []Response {
 	return e.Responses
 }
 
+// Len ...
+func (e Entry) Len() int {
+	return len(e.Responses)
+}
+
 // GetResponse ...
 func (e Entry) GetResponse(path []byte) *Response {
 	n := len(e.Responses)

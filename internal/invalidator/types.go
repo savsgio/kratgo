@@ -38,7 +38,6 @@ type Header struct {
 
 // Entry ...
 type Entry struct {
-	Action string `json:"action"`
 	Host   string `json:"host"`
 	Path   string `json:"path"`
 	Header Header `json:"header"`
