@@ -9,7 +9,7 @@ BIN_FILE = $(PROJECT_NAME)
 INTERNAL_DIR = ./internal
 
 KRATGO_DIR = $(INTERNAL_DIR)/$(PROJECT_NAME)
-CMD_DIR = ./cmd/$(PROJECT_NAME)
+CMD_DIR = ./cmd
 CONFIG_DIR = ./config/
 
 # Get version constant
