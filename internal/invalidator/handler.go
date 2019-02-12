@@ -1,9 +1,10 @@
 package invalidator
 
 import (
+	"github.com/savsgio/kratgo/internal/cache"
+
 	"github.com/allegro/bigcache"
 	"github.com/savsgio/gotils"
-	"github.com/savsgio/kratgo/internal/cache"
 )
 
 func (i *Invalidator) invalidateByHost(cacheKey string) error {
