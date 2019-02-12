@@ -9,11 +9,13 @@ Kratgo
 
 Simple, lightweight and ultra-fast HTTP Cache written in Go for accelerate your websites speed.
 
+
 ## Requirements
 
 - [Go](https://golang.org/dl/) >= 1.11.X
 - make
 - git
+
 
 ## Install
 
@@ -31,6 +33,7 @@ make install
 ```
 
 The binary file will install in `/usr/local/bin/kratgo` and configuration file in `/etc/kratgo/kratgo.conf.yml`
+
 
 ### Cache invalidation
 
@@ -53,9 +56,10 @@ The complete json body must be as following example:
 }
 ```
 
-**IMPORTANT:** *All fields are optional, but at least you need to specify one.*
+**IMPORTANT:** All fields are optional, but at least you must specify one.
 
 All invalidations will process by workers in Kratgo. You can configure the maximum available workers in the configuration.
+
 
 ### Developers
 
