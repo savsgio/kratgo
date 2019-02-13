@@ -66,4 +66,4 @@ clean:
 	rm -rf vendor/
 
 docker_build:
-	docker build -t kratgo .
+	docker build -f ./docker/Dockerfile -t savsgio/kratgo .

@@ -77,12 +77,15 @@ invalidator:
 
 proxy:
   addr: 0.0.0.0:6081
-  backendsAddrs: [<addr1>:<port1>, ...]
+  backendsAddrs:
+    [
+      <addr1>:<port1>,
+    ]
   response:
     headers:
       set:
         - name: X-Kratgo
-          value: "true"
+          value: true
 
       unset:
         - name: Set-Cookie
