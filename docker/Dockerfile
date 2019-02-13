@@ -1,22 +1,33 @@
-FROM golang:1.11-alpine3.9
+###############
+### BUILDER ###
+###############
 
-LABEL Author="Sergio Andres Virviescas Santana <developersavsgio@gmail.com>"
+FROM golang:1.11-alpine3.9 as builder
 
-RUN apk update && apk upgrade
-RUN apk add --no-cache git build-base
+RUN apk add git build-base
 
 RUN mkdir -p /usr/src/kratgo
 WORKDIR /usr/src/kratgo
+
 ADD . .
 
 RUN make
-RUN make install
 
-WORKDIR /
+###############
+### RELEASE ###
+###############
 
-# Clean
-RUN rm -rf /usr/src/kratgo
-RUN apk del git build-base
+FROM alpine:3.9
+
+LABEL Author="Sergio Andres Virviescas Santana <developersavsgio@gmail.com>"
+
+COPY --from=builder /usr/src/kratgo/ /kratgo
+
+RUN cd /kratgo \
+    && apk add make git \
+    && make install \
+    && rm -rf /kratgo \
+    && apk del make git
 
 # Configuration
 COPY ./docker/docker-entrypoint.sh /usr/local/bin/

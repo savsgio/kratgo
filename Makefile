@@ -22,20 +22,12 @@ LDFLAGS=-ldflags "-s -w -X=main.Version=$(VERSION) -X=main.Build=$(BUILD)"
 
 default: get build
 
-check-path:
-ifndef GOPATH
-	@echo "FATAL: you must declare GOPATH environment variable, for more"
-	@echo "       details, please check"
-	@echo "       http://golang.org/doc/code.html#GOPATH"
-	@exit 1
-endif
-
-get: check-path
+get:
 	@echo "[*] Downloading dependencies..."
 	go get
 	@echo "[*] Finish..."
 
-vendor: check-path
+vendor:
 	@go mod vendor
 
 build:
