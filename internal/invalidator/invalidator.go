@@ -24,6 +24,10 @@ func New(cfg Config) *Invalidator {
 }
 
 func (i *Invalidator) invalidationType(e Entry) string {
+	if e.Host == "" && e.Path == "" && e.Header.Key == "" {
+		return invTypeInvalid
+	}
+
 	if e.Path != "" {
 		if e.Header.Key != "" {
 			return invTypePathHeader
@@ -39,11 +43,22 @@ func (i *Invalidator) invalidationType(e Entry) string {
 	return invTypeHost
 }
 
-func (i *Invalidator) invalidateAll(e Entry) {
+func (i *Invalidator) invalidate(invalidationType, key string, entry *cache.Entry, e Entry) error {
+	switch invalidationType {
+	case invTypePath:
+		return i.invalidateByPath(key, entry, e)
+	case invTypeHeader:
+		return i.invalidateByHeader(key, entry, e)
+	case invTypePathHeader:
+		return i.invalidateByPathHeader(key, entry, e)
+	default:
+		return i.invalidateByHost(key)
+	}
+}
+
+func (i *Invalidator) invalidateAll(invalidationType string, e Entry) {
 	atomic.AddInt32(&i.activeWorkers, 1)
 	defer atomic.AddInt32(&i.activeWorkers, -1)
-
-	invalidationType := i.invalidationType(e)
 
 	entry := cache.AcquireEntry()
 	iter := i.cache.Iterator()
@@ -60,22 +75,7 @@ func (i *Invalidator) invalidateAll(e Entry) {
 			continue
 		}
 
-		key := v.Key()
-
-		switch invalidationType {
-		case invTypePath:
-			if err = i.invalidateByPath(key, entry, e); err != nil {
-				i.log.Errorf("Could not invalidate cache by path '%s': %v", e.Path, err)
-			}
-		case invTypeHeader:
-			if err = i.invalidateByHeader(key, entry, e); err != nil {
-				i.log.Errorf("Could not invalidate cache by header '%s = %s': %v", e.Header.Key, e.Header.Value, err)
-			}
-		case invTypePathHeader:
-			if err = i.invalidateByPathHeader(key, entry, e); err != nil {
-				i.log.Errorf("Could not invalidate cache by path '%s' and header '%s = %s': %v", e.Path, e.Header.Key, e.Header.Value, err)
-			}
-		}
+		i.invalidate(invalidationType, v.Key(), entry, e)
 
 		entry.Reset()
 	}
@@ -83,11 +83,9 @@ func (i *Invalidator) invalidateAll(e Entry) {
 	cache.ReleaseEntry(entry)
 }
 
-func (i *Invalidator) invalidate(e Entry) {
+func (i *Invalidator) invalidateHost(invalidationType string, e Entry) {
 	atomic.AddInt32(&i.activeWorkers, 1)
 	defer atomic.AddInt32(&i.activeWorkers, -1)
-
-	invalidationType := i.invalidationType(e)
 
 	key := e.Host
 	entry := cache.AcquireEntry()
@@ -99,24 +97,7 @@ func (i *Invalidator) invalidate(e Entry) {
 		return
 	}
 
-	switch invalidationType {
-	case invTypePath:
-		if err = i.invalidateByPath(key, entry, e); err != nil {
-			i.log.Errorf("Could not invalidate cache by path '%s': %v", e.Path, err)
-		}
-	case invTypeHeader:
-		if err = i.invalidateByHeader(key, entry, e); err != nil {
-			i.log.Errorf("Could not invalidate cache by header '%s = %s': %v", e.Header.Key, e.Header.Value, err)
-		}
-	case invTypePathHeader:
-		if err = i.invalidateByPathHeader(key, entry, e); err != nil {
-			i.log.Errorf("Could not invalidate cache by path '%s' and header '%s = %s': %v", e.Path, e.Header.Key, e.Header.Value, err)
-		}
-	default:
-		if err = i.invalidateByHost(key); err != nil {
-			i.log.Errorf("Could not invalidate cache by host '%s': %v", key, err)
-		}
-	}
+	i.invalidate(invalidationType, key, entry, e)
 
 	cache.ReleaseEntry(entry)
 }
@@ -129,7 +110,7 @@ func (i *Invalidator) waitAvailableWorkers() {
 
 // Add ..
 func (i *Invalidator) Add(e Entry) error {
-	if e.Host == "" && e.Path == "" && e.Header.Key == "" {
+	if t := i.invalidationType(e); t == invTypeInvalid {
 		return errEmptyFields
 	}
 
@@ -141,12 +122,14 @@ func (i *Invalidator) Add(e Entry) error {
 // Start ...
 func (i *Invalidator) Start() {
 	for e := range i.chEntries {
+		invalidationType := i.invalidationType(e)
+
 		i.waitAvailableWorkers()
 
 		if e.Host != "" {
-			go i.invalidate(e)
+			go i.invalidateHost(invalidationType, e)
 		} else {
-			go i.invalidateAll(e)
+			go i.invalidateAll(invalidationType, e)
 		}
 
 	}

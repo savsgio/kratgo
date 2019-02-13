@@ -1,6 +1,8 @@
 package invalidator
 
 import (
+	"fmt"
+
 	"github.com/savsgio/kratgo/internal/cache"
 
 	"github.com/allegro/bigcache"
@@ -9,7 +11,7 @@ import (
 
 func (i *Invalidator) invalidateByHost(cacheKey string) error {
 	if err := i.cache.Del(cacheKey); err != nil && err != bigcache.ErrEntryNotFound {
-		return err
+		return fmt.Errorf("Could not invalidate cache by host '%s': %v", cacheKey, err)
 	}
 
 	return nil
@@ -24,7 +26,11 @@ func (i *Invalidator) invalidateByPath(cacheKey string, cacheEntry *cache.Entry,
 
 	cacheEntry.DelResponse(path)
 
-	return i.cache.Set(cacheKey, cacheEntry)
+	if err := i.cache.Set(cacheKey, cacheEntry); err != nil {
+		return fmt.Errorf("Could not invalidate cache by path '%s': %v", e.Path, err)
+	}
+
+	return nil
 }
 
 func (i *Invalidator) invalidateByHeader(cacheKey string, cacheEntry *cache.Entry, e Entry) error {
@@ -38,7 +44,11 @@ func (i *Invalidator) invalidateByHeader(cacheKey string, cacheEntry *cache.Entr
 		cacheEntry.DelResponse(resp.Path)
 	}
 
-	return i.cache.Set(cacheKey, cacheEntry)
+	if err := i.cache.Set(cacheKey, cacheEntry); err != nil {
+		return fmt.Errorf("Could not invalidate cache by header '%s = %s': %v", e.Header.Key, e.Header.Value, err)
+	}
+
+	return nil
 }
 
 func (i *Invalidator) invalidateByPathHeader(cacheKey string, cacheEntry *cache.Entry, e Entry) error {
@@ -55,5 +65,9 @@ func (i *Invalidator) invalidateByPathHeader(cacheKey string, cacheEntry *cache.
 
 	cacheEntry.DelResponse(path)
 
-	return i.cache.Set(cacheKey, cacheEntry)
+	if err := i.cache.Set(cacheKey, cacheEntry); err != nil {
+		return fmt.Errorf("Could not invalidate cache by path '%s' and header '%s = %s': %v", e.Path, e.Header.Key, e.Header.Value, err)
+	}
+
+	return nil
 }
