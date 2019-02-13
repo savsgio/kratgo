@@ -190,6 +190,7 @@ func (p *Proxy) fetchFromBackend(cacheKey, path []byte, ctx *fasthttp.RequestCtx
 	cloneHeaders(&pt.httpClient.req.Header, &ctx.Request.Header)
 	pt.httpClient.setMethodBytes(ctx.Method())
 	pt.httpClient.setRequestURIBytes(path)
+	pt.httpClient.setRequestBody(ctx.PostBody())
 
 	if err := pt.httpClient.do(p.getBackend()); err != nil {
 		return fmt.Errorf("Could not fetch response from backend: %v", err)

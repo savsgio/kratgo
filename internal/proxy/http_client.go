@@ -43,6 +43,10 @@ func (hc *httpClient) setRequestURIBytes(uri []byte) {
 	hc.req.SetRequestURIBytes(uri)
 }
 
+func (hc *httpClient) setRequestBody(body []byte) {
+	hc.req.SetBody(body)
+}
+
 func (hc *httpClient) copyReqHeaderTo(h *fasthttp.RequestHeader) {
 	hc.req.Header.CopyTo(h)
 }

@@ -66,6 +66,18 @@ func TestHTTPClient_setRequestURIBytes(t *testing.T) {
 	}
 }
 
+func TestHTTPClient_setRequestBody(t *testing.T) {
+	hc := acquireHTTPClient()
+	body := []byte("{\"kratgo\": \"fast\"}")
+
+	hc.setRequestBody(body)
+
+	reqBody := hc.req.Body()
+	if !bytes.Equal(reqBody, body) {
+		t.Errorf("httpClient.setRequestBody() body == '%s', want '%s'", reqBody, body)
+	}
+}
+
 func TestHTTPClient_copyReqHeaderTo(t *testing.T) {
 	hc := acquireHTTPClient()
 	hc.req.Header.Set("Kratgo", "Cache")
