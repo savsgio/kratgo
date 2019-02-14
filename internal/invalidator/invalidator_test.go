@@ -330,10 +330,10 @@ func TestInvalidator_invalidateAll(t *testing.T) {
 
 	i.invalidateAll(invTypePath, Entry{Path: string(path)})
 
-	wantLenght := 1
+	wantLength := 1
 	length := i.cache.Len()
-	if length != wantLenght {
-		t.Errorf("Invalidator.invalidateAll() cache lenght == '%d', want '%d'", length, wantLenght)
+	if length != wantLength {
+		t.Errorf("Invalidator.invalidateAll() cache length == '%d', want '%d'", length, wantLength)
 	}
 }
 
@@ -374,10 +374,10 @@ func TestInvalidator_invalidateHost(t *testing.T) {
 
 	i.invalidateHost(invTypePath, Entry{Host: host1, Path: string(path)})
 
-	wantLenght := 1
+	wantLength := 1
 	length := i.cache.Len()
-	if length != wantLenght {
-		t.Errorf("Invalidator.invalidateAll() cache lenght == '%d', want '%d'", length, wantLenght)
+	if length != wantLength {
+		t.Errorf("Invalidator.invalidateAll() cache length == '%d', want '%d'", length, wantLength)
 	}
 }
 

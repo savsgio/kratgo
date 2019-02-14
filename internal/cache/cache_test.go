@@ -175,10 +175,10 @@ func TestCache_Len(t *testing.T) {
 		t.Fatalf("Unexpected error: %v", err)
 	}
 
-	wantLenght := 1
+	wantLength := 1
 	length := testCache.Len()
-	if length != wantLenght {
-		t.Errorf("Cache.Len() == '%d', want '%d'", length, wantLenght)
+	if length != wantLength {
+		t.Errorf("Cache.Len() == '%d', want '%d'", length, wantLength)
 	}
 }
 
@@ -194,9 +194,9 @@ func TestCache_Reset(t *testing.T) {
 
 	testCache.Reset()
 
-	wantLenght := 0
+	wantLength := 0
 	length := testCache.Len()
-	if length != wantLenght {
-		t.Errorf("Cache.Len() == '%d', want '%d'", length, wantLenght)
+	if length != wantLength {
+		t.Errorf("Cache.Len() == '%d', want '%d'", length, wantLength)
 	}
 }
