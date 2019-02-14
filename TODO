@@ -1,0 +1,6 @@
+- Cluster support with cache synchronization
+- Admin frontend:
+    - Access authentication (include API)
+    - Invalidate cache
+    - Cache statistics
+    - Server profiling (heap, gorutine, etc)
