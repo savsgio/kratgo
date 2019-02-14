@@ -173,7 +173,7 @@ func (p *Proxy) saveBackendResponse(cacheKey, path []byte, resp *fasthttp.Respon
 
 	entry.SetResponse(*r)
 
-	if err := p.cache.SetBytes(cacheKey, entry); err != nil {
+	if err := p.cache.SetBytes(cacheKey, *entry); err != nil {
 		return fmt.Errorf("Could not save response in cache for key '%s': %v", cacheKey, err)
 	}
 

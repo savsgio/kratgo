@@ -25,7 +25,7 @@ func (i *Invalidator) invalidateByHost(cacheKey string) error {
 	return nil
 }
 
-func (i *Invalidator) invalidateByPath(cacheKey string, cacheEntry *cache.Entry, e Entry) error {
+func (i *Invalidator) invalidateByPath(cacheKey string, cacheEntry cache.Entry, e Entry) error {
 	path := gotils.S2B(e.Path)
 
 	if !cacheEntry.HasResponse(path) {
@@ -50,7 +50,7 @@ func (i *Invalidator) invalidateByPath(cacheKey string, cacheEntry *cache.Entry,
 	return nil
 }
 
-func (i *Invalidator) invalidateByHeader(cacheKey string, cacheEntry *cache.Entry, e Entry) error {
+func (i *Invalidator) invalidateByHeader(cacheKey string, cacheEntry cache.Entry, e Entry) error {
 	responses := cacheEntry.GetAllResponses()
 
 	for _, resp := range responses {
@@ -77,7 +77,7 @@ func (i *Invalidator) invalidateByHeader(cacheKey string, cacheEntry *cache.Entr
 	return nil
 }
 
-func (i *Invalidator) invalidateByPathHeader(cacheKey string, cacheEntry *cache.Entry, e Entry) error {
+func (i *Invalidator) invalidateByPathHeader(cacheKey string, cacheEntry cache.Entry, e Entry) error {
 	path := gotils.S2B(e.Path)
 
 	resp := cacheEntry.GetResponse(path)

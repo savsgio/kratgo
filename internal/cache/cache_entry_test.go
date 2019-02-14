@@ -175,7 +175,7 @@ func TestMarshal(t *testing.T) {
 		t.Fatalf("Unexpected error: %v", err)
 	}
 
-	marshalData, err := Marshal(&e)
+	marshalData, err := Marshal(e)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
@@ -189,7 +189,7 @@ func TestUnmarshal(t *testing.T) {
 	e := getEntryTest()
 	entry := AcquireEntry()
 
-	marshalData, err := Marshal(&e)
+	marshalData, err := Marshal(e)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}

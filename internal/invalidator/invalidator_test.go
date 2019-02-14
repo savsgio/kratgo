@@ -141,7 +141,7 @@ func TestInvalidator_invalidationType(t *testing.T) {
 func TestInvalidator_invalidate(t *testing.T) {
 	type args struct {
 		invalidationType invType
-		entry            *cache.Entry
+		entry            cache.Entry
 		e                Entry
 	}
 
@@ -169,7 +169,7 @@ func TestInvalidator_invalidate(t *testing.T) {
 			name: "Host",
 			args: args{
 				invalidationType: invTypeHost,
-				entry: &cache.Entry{
+				entry: cache.Entry{
 					Responses: responses,
 				},
 				e: Entry{
@@ -184,7 +184,7 @@ func TestInvalidator_invalidate(t *testing.T) {
 			name: "Path",
 			args: args{
 				invalidationType: invTypePath,
-				entry: &cache.Entry{
+				entry: cache.Entry{
 					Responses: responses,
 				},
 				e: Entry{
@@ -200,7 +200,7 @@ func TestInvalidator_invalidate(t *testing.T) {
 			name: "PathHeader",
 			args: args{
 				invalidationType: invTypePathHeader,
-				entry: &cache.Entry{
+				entry: cache.Entry{
 					Responses: responses,
 				},
 				e: Entry{
@@ -220,7 +220,7 @@ func TestInvalidator_invalidate(t *testing.T) {
 			name: "Header",
 			args: args{
 				invalidationType: invTypeHeader,
-				entry: &cache.Entry{
+				entry: cache.Entry{
 					Responses: responses,
 				},
 				e: Entry{
@@ -239,7 +239,7 @@ func TestInvalidator_invalidate(t *testing.T) {
 			name: "Invalid",
 			args: args{
 				invalidationType: invTypeInvalid,
-				entry: &cache.Entry{
+				entry: cache.Entry{
 					Responses: responses,
 				},
 				e: Entry{
@@ -324,9 +324,9 @@ func TestInvalidator_invalidateAll(t *testing.T) {
 
 	i := New(testConfig())
 
-	i.cache.Set(host1, &cache.Entry{Responses: responses1})
-	i.cache.Set(host2, &cache.Entry{Responses: responses2})
-	i.cache.Set(host3, &cache.Entry{Responses: responses3})
+	i.cache.Set(host1, cache.Entry{Responses: responses1})
+	i.cache.Set(host2, cache.Entry{Responses: responses2})
+	i.cache.Set(host3, cache.Entry{Responses: responses3})
 
 	i.invalidateAll(invTypePath, Entry{Path: string(path)})
 
@@ -369,8 +369,8 @@ func TestInvalidator_invalidateHost(t *testing.T) {
 
 	i := New(testConfig())
 
-	i.cache.Set(host1, &cache.Entry{Responses: responses1})
-	i.cache.Set(host2, &cache.Entry{Responses: responses2})
+	i.cache.Set(host1, cache.Entry{Responses: responses1})
+	i.cache.Set(host2, cache.Entry{Responses: responses2})
 
 	i.invalidateHost(invTypePath, Entry{Host: host1, Path: string(path)})
 
@@ -449,7 +449,7 @@ func TestInvalidator_Start(t *testing.T) {
 	cacheEntry := cache.AcquireEntry()
 	cacheEntry.SetResponse(cache.Response{Path: []byte(path)})
 
-	if err := i.cache.Set(key, cacheEntry); err != nil {
+	if err := i.cache.Set(key, *cacheEntry); err != nil {
 		t.Fatal(err)
 	}
 

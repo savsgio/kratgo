@@ -698,7 +698,7 @@ func TestProxy_handler(t *testing.T) {
 			response := cache.AcquireResponse()
 			response.Path = tt.args.cachePath
 			entry.SetResponse(*response)
-			p.cache.SetBytes(tt.args.host, entry)
+			p.cache.SetBytes(tt.args.host, *entry)
 
 			httpClientMock := &mockHTTPClient{
 				statusCode: 200,

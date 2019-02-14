@@ -81,7 +81,7 @@ func TestCache_SetAndGetAndDel(t *testing.T) {
 
 	k := "www.kratgo.com"
 
-	err := testCache.Set(k, &e)
+	err := testCache.Set(k, e)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
@@ -118,7 +118,7 @@ func TestCache_SetAndGetAndDel_Bytes(t *testing.T) {
 
 	k := []byte("www.kratgo.com")
 
-	err := testCache.SetBytes(k, &e)
+	err := testCache.SetBytes(k, e)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
@@ -154,7 +154,7 @@ func TestCache_Iterator(t *testing.T) {
 
 	k := "www.kratgo.com"
 
-	err := testCache.Set(k, &e)
+	err := testCache.Set(k, e)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
@@ -170,7 +170,7 @@ func TestCache_Len(t *testing.T) {
 
 	k := "www.kratgo.com"
 
-	err := testCache.Set(k, &e)
+	err := testCache.Set(k, e)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
@@ -187,7 +187,7 @@ func TestCache_Reset(t *testing.T) {
 
 	k := "www.kratgo.com"
 
-	err := testCache.Set(k, &e)
+	err := testCache.Set(k, e)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}

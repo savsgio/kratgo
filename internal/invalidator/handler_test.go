@@ -17,7 +17,7 @@ func TestInvalidator_invalidateByHost(t *testing.T) {
 	entry := cache.AcquireEntry()
 	entry.SetResponse(*resp)
 
-	i.cache.Set(key, entry)
+	i.cache.Set(key, *entry)
 
 	i.invalidateByHost(key)
 
@@ -49,9 +49,9 @@ func TestInvalidator_invalidateByPath(t *testing.T) {
 	cacheEntry := cache.AcquireEntry()
 	cacheEntry.SetResponse(*resp)
 
-	i.cache.Set(key, cacheEntry)
+	i.cache.Set(key, *cacheEntry)
 
-	if err := i.invalidateByPath(key, cacheEntry, e); err != nil {
+	if err := i.invalidateByPath(key, *cacheEntry, e); err != nil {
 		t.Fatal(err)
 	}
 
@@ -89,9 +89,9 @@ func TestInvalidator_invalidateByHeader(t *testing.T) {
 	cacheEntry := cache.AcquireEntry()
 	cacheEntry.SetResponse(*resp)
 
-	i.cache.Set(key, cacheEntry)
+	i.cache.Set(key, *cacheEntry)
 
-	if err := i.invalidateByHeader(key, cacheEntry, e); err != nil {
+	if err := i.invalidateByHeader(key, *cacheEntry, e); err != nil {
 		t.Fatal(err)
 	}
 
@@ -130,9 +130,9 @@ func TestInvalidator_invalidateByPathHeader(t *testing.T) {
 	cacheEntry := cache.AcquireEntry()
 	cacheEntry.SetResponse(*resp)
 
-	i.cache.Set(key, cacheEntry)
+	i.cache.Set(key, *cacheEntry)
 
-	if err := i.invalidateByPathHeader(key, cacheEntry, e); err != nil {
+	if err := i.invalidateByPathHeader(key, *cacheEntry, e); err != nil {
 		t.Fatal(err)
 	}
 

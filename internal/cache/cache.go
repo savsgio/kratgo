@@ -49,7 +49,7 @@ func New(cfg Config) (*Cache, error) {
 }
 
 // Set ...
-func (c *Cache) Set(key string, entry *Entry) error {
+func (c *Cache) Set(key string, entry Entry) error {
 	data, err := Marshal(entry)
 	if err != nil {
 		return err
@@ -59,7 +59,7 @@ func (c *Cache) Set(key string, entry *Entry) error {
 }
 
 // SetBytes ...
-func (c *Cache) SetBytes(key []byte, entry *Entry) error {
+func (c *Cache) SetBytes(key []byte, entry Entry) error {
 	return c.Set(gotils.B2S(key), entry)
 }
 

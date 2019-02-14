@@ -43,7 +43,7 @@ func (i *Invalidator) invalidationType(e Entry) invType {
 	return invTypeHost
 }
 
-func (i *Invalidator) invalidate(invalidationType invType, key string, entry *cache.Entry, e Entry) error {
+func (i *Invalidator) invalidate(invalidationType invType, key string, entry cache.Entry, e Entry) error {
 	switch invalidationType {
 	case invTypeHost:
 		return i.invalidateByHost(key)
@@ -77,7 +77,7 @@ func (i *Invalidator) invalidateAll(invalidationType invType, e Entry) {
 			continue
 		}
 
-		if err = i.invalidate(invalidationType, v.Key(), entry, e); err != nil {
+		if err = i.invalidate(invalidationType, v.Key(), *entry, e); err != nil {
 			i.log.Error(err)
 		}
 
@@ -101,7 +101,7 @@ func (i *Invalidator) invalidateHost(invalidationType invType, e Entry) {
 		return
 	}
 
-	if err = i.invalidate(invalidationType, key, entry, e); err != nil {
+	if err = i.invalidate(invalidationType, key, *entry, e); err != nil {
 		i.log.Error(err)
 	}
 
