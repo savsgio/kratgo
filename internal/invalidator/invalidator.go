@@ -23,7 +23,7 @@ func New(cfg Config) *Invalidator {
 	return i
 }
 
-func (i *Invalidator) invalidationType(e Entry) string {
+func (i *Invalidator) invalidationType(e Entry) invType {
 	if e.Host == "" && e.Path == "" && e.Header.Key == "" {
 		return invTypeInvalid
 	}
@@ -43,7 +43,7 @@ func (i *Invalidator) invalidationType(e Entry) string {
 	return invTypeHost
 }
 
-func (i *Invalidator) invalidate(invalidationType, key string, entry *cache.Entry, e Entry) error {
+func (i *Invalidator) invalidate(invalidationType invType, key string, entry *cache.Entry, e Entry) error {
 	switch invalidationType {
 	case invTypePath:
 		return i.invalidateByPath(key, entry, e)
@@ -56,7 +56,7 @@ func (i *Invalidator) invalidate(invalidationType, key string, entry *cache.Entr
 	}
 }
 
-func (i *Invalidator) invalidateAll(invalidationType string, e Entry) {
+func (i *Invalidator) invalidateAll(invalidationType invType, e Entry) {
 	atomic.AddInt32(&i.activeWorkers, 1)
 	defer atomic.AddInt32(&i.activeWorkers, -1)
 
@@ -75,7 +75,9 @@ func (i *Invalidator) invalidateAll(invalidationType string, e Entry) {
 			continue
 		}
 
-		i.invalidate(invalidationType, v.Key(), entry, e)
+		if err = i.invalidate(invalidationType, v.Key(), entry, e); err != nil {
+			i.log.Error(err)
+		}
 
 		entry.Reset()
 	}
@@ -83,7 +85,7 @@ func (i *Invalidator) invalidateAll(invalidationType string, e Entry) {
 	cache.ReleaseEntry(entry)
 }
 
-func (i *Invalidator) invalidateHost(invalidationType string, e Entry) {
+func (i *Invalidator) invalidateHost(invalidationType invType, e Entry) {
 	atomic.AddInt32(&i.activeWorkers, 1)
 	defer atomic.AddInt32(&i.activeWorkers, -1)
 
@@ -97,7 +99,9 @@ func (i *Invalidator) invalidateHost(invalidationType string, e Entry) {
 		return
 	}
 
-	i.invalidate(invalidationType, key, entry, e)
+	if err = i.invalidate(invalidationType, key, entry, e); err != nil {
+		i.log.Error(err)
+	}
 
 	cache.ReleaseEntry(entry)
 }

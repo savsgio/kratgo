@@ -76,10 +76,12 @@ type rule struct {
 	params []ruleParam
 }
 
+type typeHeaderAction int
+
 type headerRule struct {
 	rule
 
-	action string
+	action typeHeaderAction
 	name   string
 	value  headerValue
 }

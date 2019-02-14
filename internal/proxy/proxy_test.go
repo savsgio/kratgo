@@ -291,12 +291,12 @@ func TestProxy_parseNocacheRules(t *testing.T) {
 
 func TestProxy_parseHeadersRules(t *testing.T) {
 	type args struct {
-		action string
+		action typeHeaderAction
 		rules  []config.Header
 	}
 
 	type want struct {
-		action string
+		action typeHeaderAction
 		err    bool
 	}
 
@@ -368,7 +368,7 @@ func TestProxy_parseHeadersRules(t *testing.T) {
 
 				for i, pr := range p.headersRules {
 					if tt.want.action != pr.action {
-						t.Errorf("Proxy.parseHeadersRules() action == '%s', want '%s'", pr.action, tt.want.action)
+						t.Errorf("Proxy.parseHeadersRules() action == '%d', want '%d'", pr.action, tt.want.action)
 					}
 
 					configHeader := tt.args.rules[i]
@@ -377,7 +377,7 @@ func TestProxy_parseHeadersRules(t *testing.T) {
 					}
 
 					if configHeader.Name != pr.name {
-						t.Errorf("Proxy.parseHeadersRules() action == '%s', want '%s'", pr.action, tt.want.action)
+						t.Errorf("Proxy.parseHeadersRules() name == '%s', want '%s'", configHeader.Name, pr.name)
 					}
 
 					_, evalKey, evalSubKey := config.ParseConfigKeys(configHeader.Value)

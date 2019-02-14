@@ -42,3 +42,5 @@ type Entry struct {
 	Path   string `json:"path"`
 	Header Header `json:"header"`
 }
+
+type invType int

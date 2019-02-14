@@ -3,5 +3,7 @@ package proxy
 const headerLocation = "Location"
 const headerContentEncoding = "Content-Encoding"
 
-const setHeaderAction = "set"
-const unsetHeaderAction = "unset"
+const (
+	setHeaderAction typeHeaderAction = iota
+	unsetHeaderAction
+)

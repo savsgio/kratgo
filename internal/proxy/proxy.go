@@ -133,7 +133,7 @@ func (p *Proxy) parseNocacheRules() error {
 	return nil
 }
 
-func (p *Proxy) parseHeadersRules(action string, headers []config.Header) error {
+func (p *Proxy) parseHeadersRules(action typeHeaderAction, headers []config.Header) error {
 	for _, h := range headers {
 		r := headerRule{action: action, name: h.Name}
 
