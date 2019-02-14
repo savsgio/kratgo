@@ -63,7 +63,7 @@ All invalidations will process by workers in Kratgo. You can configure the maxim
 
 ### Docker
 
-The docker image is available in Docker Hub: [savsgio/docker](https://hub.docker.com/r/savsgio/kratgo)
+The docker image is available in Docker Hub: [savsgio/kratgo](https://hub.docker.com/r/savsgio/kratgo)
 
 Get a basic configuration from [here](https://github.com/savsgio/kratgo/blob/master/config/kratgo.conf.yml) and customize it.
 
