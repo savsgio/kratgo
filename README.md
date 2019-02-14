@@ -61,10 +61,17 @@ The complete json body must be as following example:
 All invalidations will process by workers in Kratgo. You can configure the maximum available workers in the configuration.
 
 
-### Docker 
+### Docker
 
 The docker image is available in Docker Hub: [savsgio/docker](https://hub.docker.com/r/savsgio/kratgo)
 
+Get a basic configuration from [here](https://github.com/savsgio/kratgo/blob/master/config/kratgo.conf.yml) and customize it.
+
+Run with:
+
+```bash
+docker run --rm --name kratgo -it -v <VOLUME WIHT CONFIG> -p 6081:6081 -p 6082:6082 savsgio/kratgo -config <CONFIG FILE PATH IN THE VOLUME>
+```
 
 ### Developers
 
