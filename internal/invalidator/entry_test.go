@@ -8,7 +8,7 @@ func getEntryTest() Entry {
 	return Entry{
 		Host: "www.kratgo.com",
 		Path: "/fast/",
-		Header: Header{
+		Header: EntryHeader{
 			Key:   "X-Data",
 			Value: "1",
 		},

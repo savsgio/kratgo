@@ -116,6 +116,8 @@ func fileConfigCache() config.Cache {
 }
 
 func testConfig() Config {
+	testCache.Reset()
+
 	return Config{
 		FileConfig:  fileConfigAdmin(),
 		Cache:       testCache,

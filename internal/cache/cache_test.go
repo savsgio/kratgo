@@ -164,3 +164,39 @@ func TestCache_Iterator(t *testing.T) {
 		t.Errorf("Could not get iterator from cache")
 	}
 }
+
+func TestCache_Len(t *testing.T) {
+	e := getEntryTest()
+
+	k := "www.kratgo.com"
+
+	err := testCache.Set(k, &e)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	wantLenght := 1
+	length := testCache.Len()
+	if length != wantLenght {
+		t.Errorf("Cache.Len() == '%d', want '%d'", length, wantLenght)
+	}
+}
+
+func TestCache_Reset(t *testing.T) {
+	e := getEntryTest()
+
+	k := "www.kratgo.com"
+
+	err := testCache.Set(k, &e)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	testCache.Reset()
+
+	wantLenght := 0
+	length := testCache.Len()
+	if length != wantLenght {
+		t.Errorf("Cache.Len() == '%d', want '%d'", length, wantLenght)
+	}
+}

@@ -75,7 +75,7 @@ func TestInvalidator_invalidateByHeader(t *testing.T) {
 
 	e := Entry{
 		Path: path,
-		Header: Header{
+		Header: EntryHeader{
 			Key:   string(headerKey),
 			Value: string(headerValue),
 		},
@@ -115,7 +115,7 @@ func TestInvalidator_invalidateByPathHeader(t *testing.T) {
 
 	e := Entry{
 		Path: path,
-		Header: Header{
+		Header: EntryHeader{
 			Key:   string(headerKey),
 			Value: string(headerValue),
 		},

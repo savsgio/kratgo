@@ -20,7 +20,7 @@ func ReleaseEntry(e *Entry) {
 }
 
 // Reset ...
-func (h *Header) Reset() {
+func (h *EntryHeader) Reset() {
 	h.Key = ""
 	h.Value = ""
 }

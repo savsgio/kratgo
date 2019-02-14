@@ -57,6 +57,8 @@ func (mock *mockServer) ListenAndServe(addr string) error {
 }
 
 func testConfig() Config {
+	testCache.Reset()
+
 	return Config{
 		FileConfig: config.Proxy{
 			Addr:          "localhost:8000",

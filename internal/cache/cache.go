@@ -94,3 +94,13 @@ func (c *Cache) DelBytes(key []byte) error {
 func (c *Cache) Iterator() *bigcache.EntryInfoIterator {
 	return c.bc.Iterator()
 }
+
+// Len ...
+func (c *Cache) Len() int {
+	return c.bc.Len()
+}
+
+// Reset ...
+func (c *Cache) Reset() error {
+	return c.bc.Reset()
+}

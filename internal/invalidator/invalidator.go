@@ -45,15 +45,17 @@ func (i *Invalidator) invalidationType(e Entry) invType {
 
 func (i *Invalidator) invalidate(invalidationType invType, key string, entry *cache.Entry, e Entry) error {
 	switch invalidationType {
+	case invTypeHost:
+		return i.invalidateByHost(key)
 	case invTypePath:
 		return i.invalidateByPath(key, entry, e)
 	case invTypeHeader:
 		return i.invalidateByHeader(key, entry, e)
 	case invTypePathHeader:
 		return i.invalidateByPathHeader(key, entry, e)
-	default:
-		return i.invalidateByHost(key)
 	}
+
+	return nil
 }
 
 func (i *Invalidator) invalidateAll(invalidationType invType, e Entry) {

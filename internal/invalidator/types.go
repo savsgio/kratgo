@@ -30,17 +30,17 @@ type Invalidator struct {
 	log       *logger.Logger
 }
 
-// Header ...
-type Header struct {
+// EntryHeader ...
+type EntryHeader struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
 }
 
 // Entry ...
 type Entry struct {
-	Host   string `json:"host"`
-	Path   string `json:"path"`
-	Header Header `json:"header"`
+	Host   string      `json:"host"`
+	Path   string      `json:"path"`
+	Header EntryHeader `json:"header"`
 }
 
 type invType int
