@@ -10,7 +10,7 @@ Kratgo
 Simple, lightweight and ultra-fast HTTP Cache written in Go for accelerate your websites speed.
 
 
-## Requirements
+### Requirements
 
 - [Go](https://golang.org/dl/) >= 1.11.X
 - make
@@ -35,11 +35,11 @@ make install
 The binary file will install in `/usr/local/bin/kratgo` and configuration file in `/etc/kratgo/kratgo.conf.yml`
 
 
-### Cache invalidation
+## Cache invalidation (Admin)
 
-The cache invalidation is available via API. The API's address is configured in `admin` section of the configuration file.
+The cache invalidation is available via API. The API's address is configured in ***admin*** section of the configuration file.
 
-This API only accepts ***POST*** requests with a ***json*** in request's body, under the path `/invalidate/`.
+This API only accepts ***POST*** requests with ***json***, under the path `/invalidate/`.
 
 Ex: `http://localhost:6082/invalidate/`
 
@@ -56,12 +56,14 @@ The complete json body must be as following example:
 }
 ```
 
-**IMPORTANT:** All fields are optional, but at least you must specify one.
+**IMPORTANT: All fields are optional, but at least you must specify one.**
 
 All invalidations will process by workers in Kratgo. You can configure the maximum available workers in the configuration.
 
+The workers are activated only when necessary.
 
-### Docker
+
+## Docker
 
 The docker image is available in Docker Hub: [savsgio/kratgo](https://hub.docker.com/r/savsgio/kratgo)
 
@@ -73,7 +75,7 @@ Run with:
 docker run --rm --name kratgo -it -v <VOLUME WIHT CONFIG> -p 6081:6081 -p 6082:6082 savsgio/kratgo -config <CONFIG FILE PATH IN THE VOLUME>
 ```
 
-### Developers
+## Developers
 
 Copy configuration file `./config/kratgo.conf.yml` to `./config/kratgo-dev.conf.yml`, and customize it.
 
