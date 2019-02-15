@@ -7,7 +7,7 @@ Kratgo
 [![Docker](https://img.shields.io/docker/automated/savsgio/kratgo.svg?colorB=blue&style=flat)](https://hub.docker.com/r/savsgio/kratgo)
 <!-- [![GoDoc](https://godoc.org/github.com/savsgio/kratgo?status.svg)](https://godoc.org/github.com/savsgio/kratgo) -->
 
-Simple, lightweight and ultra-fast HTTP Cache written in Go for accelerate your websites speed.
+Simple, lightweight and ultra-fast HTTP Cache for accelerate your websites speed.
 
 
 ### Requirements
