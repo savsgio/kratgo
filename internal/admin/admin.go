@@ -19,9 +19,13 @@ func New(cfg Config) (*Admin, error) {
 	log := logger.New(logName, cfg.LogLevel, cfg.LogOutput)
 
 	addr := strings.Split(cfg.FileConfig.Addr, ":")
+	if len(addr) < 2 {
+		return nil, fmt.Errorf("Invalid address '%s'", cfg.FileConfig.Addr)
+	}
+
 	port, err := strconv.Atoi(addr[1])
 	if err != nil {
-		return nil, fmt.Errorf("Invalid address '%s': %v", cfg.FileConfig.Addr, err)
+		return nil, fmt.Errorf("Invalid port '%s'", cfg.FileConfig.Addr)
 	}
 
 	a.server = atreugo.New(&atreugo.Config{

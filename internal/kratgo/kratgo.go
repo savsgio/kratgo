@@ -39,12 +39,15 @@ func New(cfg config.Config) (*Kratgo, error) {
 	}
 	k.Proxy = p
 
-	i := invalidator.New(invalidator.Config{
+	i, err := invalidator.New(invalidator.Config{
 		FileConfig: cfg.Invalidator,
 		Cache:      c,
 		LogLevel:   cfg.LogLevel,
 		LogOutput:  logFile,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	a, err := admin.New(admin.Config{
 		FileConfig:  cfg.Admin,

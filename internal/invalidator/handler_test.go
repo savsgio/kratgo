@@ -7,7 +7,10 @@ import (
 )
 
 func TestInvalidator_invalidateByHost(t *testing.T) {
-	i := New(testConfig())
+	i, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	key := "www.kratgo.com"
 
@@ -33,7 +36,10 @@ func TestInvalidator_invalidateByHost(t *testing.T) {
 }
 
 func TestInvalidator_invalidateByPath(t *testing.T) {
-	i := New(testConfig())
+	i, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	path := "/fast"
 
@@ -67,7 +73,10 @@ func TestInvalidator_invalidateByPath(t *testing.T) {
 }
 
 func TestInvalidator_invalidateByHeader(t *testing.T) {
-	i := New(testConfig())
+	i, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	path := "/fast"
 	headerKey := []byte("kratgo")
@@ -107,7 +116,10 @@ func TestInvalidator_invalidateByHeader(t *testing.T) {
 }
 
 func TestInvalidator_invalidateByPathHeader(t *testing.T) {
-	i := New(testConfig())
+	i, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	path := "/fast"
 	headerKey := []byte("kratgo")

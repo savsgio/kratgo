@@ -10,7 +10,11 @@ import (
 )
 
 // New ...
-func New(cfg Config) *Invalidator {
+func New(cfg Config) (*Invalidator, error) {
+	if cfg.FileConfig.MaxWorkers == 0 {
+		return nil, ErrMaxWorkersZero
+	}
+
 	log := logger.New("kratgo-invalidator", cfg.LogLevel, cfg.LogOutput)
 
 	i := &Invalidator{
@@ -20,7 +24,7 @@ func New(cfg Config) *Invalidator {
 		log:        log,
 	}
 
-	return i
+	return i, nil
 }
 
 func (i *Invalidator) invalidationType(e Entry) invType {

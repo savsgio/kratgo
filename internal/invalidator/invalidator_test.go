@@ -127,7 +127,10 @@ func TestInvalidator_invalidationType(t *testing.T) {
 		},
 	}
 
-	i := New(testConfig())
+	i, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -252,7 +255,10 @@ func TestInvalidator_invalidate(t *testing.T) {
 		},
 	}
 
-	i := New(testConfig())
+	i, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -322,7 +328,10 @@ func TestInvalidator_invalidateAll(t *testing.T) {
 		},
 	}
 
-	i := New(testConfig())
+	i, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	i.cache.Set(host1, cache.Entry{Responses: responses1})
 	i.cache.Set(host2, cache.Entry{Responses: responses2})
@@ -367,7 +376,10 @@ func TestInvalidator_invalidateHost(t *testing.T) {
 		},
 	}
 
-	i := New(testConfig())
+	i, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	i.cache.Set(host1, cache.Entry{Responses: responses1})
 	i.cache.Set(host2, cache.Entry{Responses: responses2})
@@ -420,7 +432,11 @@ func TestInvalidator_Add(t *testing.T) {
 		},
 	}
 
-	i := New(testConfig())
+	i, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	go i.Start()
 
 	for _, tt := range tests {
@@ -443,7 +459,10 @@ func TestInvalidator_Start(t *testing.T) {
 		Path: path,
 	}
 
-	i := New(testConfig())
+	i, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
 	i.chEntries = make(chan Entry, 1)
 
 	cacheEntry := cache.AcquireEntry()
