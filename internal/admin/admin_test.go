@@ -8,12 +8,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/savsgio/atreugo/v7"
+	logger "github.com/savsgio/go-logger"
 	"github.com/savsgio/kratgo/internal/cache"
 	"github.com/savsgio/kratgo/internal/config"
 	"github.com/savsgio/kratgo/internal/invalidator"
-
-	"github.com/savsgio/atreugo/v7"
-	logger "github.com/savsgio/go-logger"
 )
 
 var testCache *cache.Cache
@@ -126,6 +125,118 @@ func testConfig() Config {
 		HTTPScheme:  "http",
 		LogLevel:    logger.FATAL,
 		LogOutput:   os.Stderr,
+	}
+}
+
+func TestAdmin_New(t *testing.T) {
+	type args struct {
+		cfg Config
+	}
+
+	type want struct {
+		err bool
+	}
+
+	logLevel := logger.FATAL
+	logOutput := os.Stderr
+	httpScheme := "http"
+	invalidatorMock := new(mockInvalidator)
+
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "Ok",
+			args: args{
+				cfg: Config{
+					FileConfig: config.Admin{
+						Addr: "localhost:9999",
+					},
+					Cache:       testCache,
+					Invalidator: invalidatorMock,
+					HTTPScheme:  httpScheme,
+					LogLevel:    logLevel,
+					LogOutput:   logOutput,
+				},
+			},
+			want: want{
+				err: false,
+			},
+		},
+		{
+			name: "InvalidAddress",
+			args: args{
+				cfg: Config{
+					FileConfig: config.Admin{
+						Addr: "localhost",
+					},
+					Cache:       testCache,
+					Invalidator: invalidatorMock,
+					HTTPScheme:  httpScheme,
+					LogLevel:    logLevel,
+					LogOutput:   logOutput,
+				},
+			},
+			want: want{
+				err: true,
+			},
+		},
+		{
+			name: "InvalidPort",
+			args: args{
+				cfg: Config{
+					FileConfig: config.Admin{
+						Addr: "localhost:",
+					},
+					Cache:       testCache,
+					Invalidator: invalidatorMock,
+					HTTPScheme:  httpScheme,
+					LogLevel:    logLevel,
+					LogOutput:   logOutput,
+				},
+			},
+			want: want{
+				err: true,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a, err := New(tt.args.cfg)
+			if (err != nil) != tt.want.err {
+				t.Fatalf("New() error == '%v', want '%v'", err, tt.want.err)
+			}
+
+			if tt.want.err {
+				return
+			}
+
+			if a.server == nil {
+				t.Errorf("Admin.New() server is '%v'", nil)
+			}
+
+			if a.httpScheme != httpScheme {
+				t.Errorf("Admin.New() httpScheme == '%s', want '%s'", a.httpScheme, httpScheme)
+			}
+
+			adminCachePtr := reflect.ValueOf(a.cache).Pointer()
+			testCachePtr := reflect.ValueOf(testCache).Pointer()
+			if adminCachePtr != testCachePtr {
+				t.Errorf("Admin.New() cache == '%d', want '%d'", adminCachePtr, testCachePtr)
+			}
+
+			adminInvalidatorPtr := reflect.ValueOf(a.invalidator).Pointer()
+			invalidatorPtr := reflect.ValueOf(invalidatorMock).Pointer()
+			if adminInvalidatorPtr != invalidatorPtr {
+				t.Errorf("Admin.New() invalidator == '%d', want '%d'", adminInvalidatorPtr, invalidatorPtr)
+			}
+
+			if a.log == nil {
+				t.Errorf("Admin.New() log is '%v'", nil)
+			}
+		})
 	}
 }
 

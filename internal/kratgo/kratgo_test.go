@@ -157,10 +157,8 @@ func TestKratgo_New(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			k, err := New(tt.args.cfg)
-			if err != nil && !tt.want.err {
-				t.Fatalf("Unexpected error: %v", err)
-			} else if err == nil && tt.want.err {
-				t.Fatalf("Expected error: %v", err)
+			if (err != nil) != tt.want.err {
+				t.Fatalf("New() error == '%v', want '%v'", err, tt.want.err)
 			}
 
 			if tt.want.err {
@@ -170,6 +168,13 @@ func TestKratgo_New(t *testing.T) {
 			logName := k.logFile.Name()
 			if logName != tt.want.logFileName {
 				t.Errorf("Kratgo.New() log file == '%s', want '%s'", logName, tt.want.logFileName)
+			}
+
+			if k.Admin == nil {
+				t.Errorf("Kratgo.New() Admin is '%v'", nil)
+			}
+			if k.Proxy == nil {
+				t.Errorf("Kratgo.New() Proxy is '%v'", nil)
 			}
 		})
 	}
