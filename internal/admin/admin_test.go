@@ -31,7 +31,7 @@ func init() {
 	testCache = c
 }
 
-type Path struct {
+type mockPath struct {
 	method string
 	url    string
 	view   atreugo.View
@@ -41,14 +41,37 @@ type mockServer struct {
 	listenAndServeCalled bool
 	logOutput            io.Writer
 
-	paths []Path
+	paths []mockPath
 
 	mu sync.RWMutex
+}
+
+func (mock *mockServer) ListenAndServe() error {
+	mock.mu.Lock()
+	mock.listenAndServeCalled = true
+	mock.mu.Unlock()
+
+	time.Sleep(250 * time.Millisecond)
+
+	return nil
+}
+
+func (mock *mockServer) Path(httpMethod string, url string, viewFn atreugo.View) {
+	mock.paths = append(mock.paths, mockPath{
+		method: httpMethod,
+		url:    url,
+		view:   viewFn,
+	})
+}
+
+func (mock *mockServer) SetLogOutput(output io.Writer) {
+	mock.logOutput = output
 }
 
 type mockInvalidator struct {
 	addCalled   bool
 	startCalled bool
+	err         error
 
 	mu sync.RWMutex
 }
@@ -64,32 +87,10 @@ func (mock *mockInvalidator) Add(e invalidator.Entry) error {
 	mock.addCalled = true
 	mock.mu.Unlock()
 
-	return nil
+	return mock.err
 }
 
-func (mock *mockServer) ListenAndServe() error {
-	mock.mu.Lock()
-	mock.listenAndServeCalled = true
-	mock.mu.Unlock()
-
-	time.Sleep(250 * time.Millisecond)
-
-	return nil
-}
-
-func (mock *mockServer) Path(httpMethod string, url string, viewFn atreugo.View) {
-	mock.paths = append(mock.paths, Path{
-		method: httpMethod,
-		url:    url,
-		view:   viewFn,
-	})
-}
-
-func (mock *mockServer) SetLogOutput(output io.Writer) {
-	mock.logOutput = output
-}
-
-func getPath(paths []Path, url, method string) *Path {
+func getMockPath(paths []mockPath, url, method string) *mockPath {
 	for _, v := range paths {
 		if v.url == url && v.method == method {
 			return &v
@@ -123,7 +124,7 @@ func testConfig() Config {
 		Cache:       testCache,
 		Invalidator: nil,
 		HTTPScheme:  "http",
-		LogLevel:    "error",
+		LogLevel:    logger.FATAL,
 		LogOutput:   os.Stderr,
 	}
 }
@@ -135,7 +136,7 @@ func TestAdmin_init(t *testing.T) {
 	admin.server = serverMock
 	admin.init()
 
-	expectedPaths := []Path{
+	expectedPaths := []mockPath{
 		{
 			method: "POST",
 			url:    "/invalidate/",
@@ -148,7 +149,7 @@ func TestAdmin_init(t *testing.T) {
 	}
 
 	for _, path := range serverMock.paths {
-		p := getPath(expectedPaths, path.url, path.method)
+		p := getMockPath(expectedPaths, path.url, path.method)
 		if p == nil {
 			t.Errorf("Admin.server.path() method == '%s', want '%s'", path.method, p.method)
 			t.Errorf("Admin.server.path() url == '%s', want '%s'", path.url, p.url)

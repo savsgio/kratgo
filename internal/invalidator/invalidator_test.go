@@ -415,7 +415,7 @@ func TestInvalidator_Add(t *testing.T) {
 				entry: Entry{},
 			},
 			want: want{
-				err: errEmptyFields,
+				err: ErrEmptyFields,
 			},
 		},
 	}

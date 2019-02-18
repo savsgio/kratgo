@@ -2,4 +2,5 @@ package invalidator
 
 import "errors"
 
-var errEmptyFields = errors.New("Minimum one mandatory field")
+// ErrEmptyFields ...
+var ErrEmptyFields = errors.New("Minimum one mandatory field")

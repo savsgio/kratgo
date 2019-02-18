@@ -117,7 +117,7 @@ func (i *Invalidator) waitAvailableWorkers() {
 // Add ..
 func (i *Invalidator) Add(e Entry) error {
 	if t := i.invalidationType(e); t == invTypeInvalid {
-		return errEmptyFields
+		return ErrEmptyFields
 	}
 
 	i.chEntries <- e
