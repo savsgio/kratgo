@@ -37,13 +37,19 @@ func TestKratgo_ListenAndServe(t *testing.T) {
 	proxyMock.mu.RLock()
 	defer proxyMock.mu.RUnlock()
 	if !proxyMock.listenAndServeCalled {
-		t.Error("Admin.ListenAndServe() proxy server is not listening")
+		t.Error("Kratgo.ListenAndServe() proxy server is not listening")
 	}
 
 	adminMock.mu.RLock()
 	defer adminMock.mu.RUnlock()
 	if !adminMock.listenAndServeCalled {
-		t.Error("Admin.ListenAndServe() admin server is not listening")
+		t.Error("Kratgo.ListenAndServe() admin server is not listening")
 	}
+}
 
+func TestKratgo_Version(t *testing.T) {
+	v := Version()
+	if v != version {
+		t.Errorf("Kratgo.Version() == '%s', want '%s'", v, version)
+	}
 }

@@ -78,3 +78,8 @@ func (k *Kratgo) ListenAndServe() error {
 
 	return <-err
 }
+
+// Version ...
+func Version() string {
+	return version
+}
