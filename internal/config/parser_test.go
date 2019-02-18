@@ -3,14 +3,14 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"reflect"
 	"regexp"
 	"testing"
 	"time"
 )
 
-func TestParse(t *testing.T) {
-	yamlConfig := []byte(`logLevel: debug
+var yamlConfig = []byte(`logLevel: debug
 logOutput: console
 
 cache:
@@ -47,86 +47,147 @@ admin:
   addr: 0.0.0.0:6082
 `)
 
-	configFilePath := "/tmp/kratgo_tests.yml"
-
-	if err := ioutil.WriteFile(configFilePath, yamlConfig, 0666); err != nil {
-		t.Fatal(err)
+func TestParse(t *testing.T) {
+	type args struct {
+		filePath    string
+		fileContent []byte
+		filePerms   os.FileMode
 	}
 
-	cfg, err := Parse(configFilePath)
-	if err != nil {
-		t.Fatalf("Unexpected error: %v", err)
+	type want struct {
+		err bool
 	}
 
-	logLevel := "debug"
-	if cfg.LogLevel != logLevel {
-		t.Fatalf("Parse() LogLevel == '%s', want '%s'", cfg.LogLevel, logLevel)
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "Ok",
+			args: args{
+				filePath:    "/tmp/kratgo_tests.yml",
+				fileContent: yamlConfig,
+				filePerms:   0775,
+			},
+			want: want{
+				err: false,
+			},
+		},
+		{
+			name: "InvalidFile",
+			args: args{
+				filePath: "",
+			},
+			want: want{
+				err: true,
+			},
+		},
+		{
+			name: "InvalidContent",
+			args: args{
+				filePath:    "/tmp/kratgo_tests.yml",
+				fileContent: []byte("aasd\tsxfa\n:$%·$&·&"),
+				filePerms:   0775,
+			},
+			want: want{
+				err: true,
+			},
+		},
 	}
 
-	logOutput := "console"
-	if cfg.LogOutput != logOutput {
-		t.Fatalf("Parse() LogOutput == '%s', want '%s'", cfg.LogOutput, logOutput)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.args.filePath != "" {
+				err := ioutil.WriteFile(tt.args.filePath, tt.args.fileContent, tt.args.filePerms)
+				if err != nil {
+					panic(err)
+				}
+			}
+
+			cfg, err := Parse(tt.args.filePath)
+			if err != nil && !tt.want.err {
+				t.Fatalf("Unexpected error: %v", err)
+			} else if err == nil && tt.want.err {
+				t.Fatalf("Expected error: %v", err)
+			}
+
+			if tt.want.err {
+				return
+			}
+
+			logLevel := "debug"
+			if cfg.LogLevel != logLevel {
+				t.Fatalf("Parse() LogLevel == '%s', want '%s'", cfg.LogLevel, logLevel)
+			}
+
+			logOutput := "console"
+			if cfg.LogOutput != logOutput {
+				t.Fatalf("Parse() LogOutput == '%s', want '%s'", cfg.LogOutput, logOutput)
+			}
+
+			cacheTTL := time.Duration(10)
+			if cfg.Cache.TTL != cacheTTL {
+				t.Fatalf("Parse() Cache.TTL == '%d', want '%d'", cfg.Cache.TTL, cacheTTL)
+			}
+
+			cacheCleanFrequency := time.Duration(1)
+			if cfg.Cache.CleanFrequency != cacheCleanFrequency {
+				t.Fatalf("Parse() Cache.CleanFrequency == '%d', want '%d'", cfg.Cache.CleanFrequency, cacheCleanFrequency)
+			}
+
+			cacheMaxEntries := 600000
+			if cfg.Cache.MaxEntries != cacheMaxEntries {
+				t.Fatalf("Parse() Cache.MaxEntries == '%d', want '%d'", cfg.Cache.MaxEntries, cacheMaxEntries)
+			}
+
+			cacheMaxEntrySize := 500
+			if cfg.Cache.MaxEntrySize != cacheMaxEntrySize {
+				t.Fatalf("Parse() Cache.MaxEntrySize == '%d', want '%d'", cfg.Cache.MaxEntrySize, cacheMaxEntrySize)
+			}
+
+			cacheHardMaxCacheSize := 0
+			if cfg.Cache.HardMaxCacheSize != cacheHardMaxCacheSize {
+				t.Fatalf("Parse() Cache.HardMaxCacheSize == '%d', want '%d'", cfg.Cache.HardMaxCacheSize, cacheHardMaxCacheSize)
+			}
+
+			invalidatorMaxWorkers := int32(5)
+			if cfg.Invalidator.MaxWorkers != invalidatorMaxWorkers {
+				t.Fatalf("Parse() Invalidator.MaxWorkers == '%d', want '%d'", cfg.Invalidator.MaxWorkers, invalidatorMaxWorkers)
+			}
+
+			proxyAddr := "0.0.0.0:6081"
+			if cfg.Proxy.Addr != proxyAddr {
+				t.Fatalf("Parse() Proxy.Addr == '%s', want '%s'", cfg.Proxy.Addr, proxyAddr)
+			}
+
+			proxyBackendsAddrs := []string{"1.2.3.4:5678"}
+			if !reflect.DeepEqual(cfg.Proxy.BackendsAddrs, proxyBackendsAddrs) {
+				t.Fatalf("Parse() Proxy.BackendsAddrs == '%v', want '%v'", cfg.Proxy.BackendsAddrs, proxyBackendsAddrs)
+			}
+
+			proxyResponseHeadersSet := []Header{{Name: "X-Theme", Value: "$(resp.header::Theme)"}}
+			if !reflect.DeepEqual(cfg.Proxy.Response.Headers.Set, proxyResponseHeadersSet) {
+				t.Fatalf("Parse() Proxy.Response.Headers.Set == '%v', want '%v'", cfg.Proxy.Response.Headers.Set, proxyResponseHeadersSet)
+			}
+
+			proxyResponseHeadersUnset := []Header{{Name: "Set-Cookie", When: "$(path) !~ '/preview/' && $(path) !~ '/exit_preview/' && $(cookie::is_preview) == 'True'"}}
+			if !reflect.DeepEqual(cfg.Proxy.Response.Headers.Unset, proxyResponseHeadersUnset) {
+				t.Fatalf("Parse() Proxy.Response.Headers.Unset == '%v', want '%v'", cfg.Proxy.Response.Headers.Unset, proxyResponseHeadersUnset)
+			}
+
+			proxyNocache := []string{"$(method) == 'POST'", "$(host) == 'www.kratgo.com'"}
+			if !reflect.DeepEqual(cfg.Proxy.Nocache, proxyNocache) {
+				t.Fatalf("Parse() Proxy.Nocache == '%v', want '%v'", cfg.Proxy.Nocache, proxyNocache)
+			}
+
+			adminAddr := "0.0.0.0:6082"
+			if cfg.Admin.Addr != adminAddr {
+				t.Fatalf("Parse() Admin.Addr == '%s', want '%s'", cfg.Admin.Addr, adminAddr)
+			}
+		})
 	}
 
-	cacheTTL := time.Duration(10)
-	if cfg.Cache.TTL != cacheTTL {
-		t.Fatalf("Parse() Cache.TTL == '%d', want '%d'", cfg.Cache.TTL, cacheTTL)
-	}
-
-	cacheCleanFrequency := time.Duration(1)
-	if cfg.Cache.CleanFrequency != cacheCleanFrequency {
-		t.Fatalf("Parse() Cache.CleanFrequency == '%d', want '%d'", cfg.Cache.CleanFrequency, cacheCleanFrequency)
-	}
-
-	cacheMaxEntries := 600000
-	if cfg.Cache.MaxEntries != cacheMaxEntries {
-		t.Fatalf("Parse() Cache.MaxEntries == '%d', want '%d'", cfg.Cache.MaxEntries, cacheMaxEntries)
-	}
-
-	cacheMaxEntrySize := 500
-	if cfg.Cache.MaxEntrySize != cacheMaxEntrySize {
-		t.Fatalf("Parse() Cache.MaxEntrySize == '%d', want '%d'", cfg.Cache.MaxEntrySize, cacheMaxEntrySize)
-	}
-
-	cacheHardMaxCacheSize := 0
-	if cfg.Cache.HardMaxCacheSize != cacheHardMaxCacheSize {
-		t.Fatalf("Parse() Cache.HardMaxCacheSize == '%d', want '%d'", cfg.Cache.HardMaxCacheSize, cacheHardMaxCacheSize)
-	}
-
-	invalidatorMaxWorkers := int32(5)
-	if cfg.Invalidator.MaxWorkers != invalidatorMaxWorkers {
-		t.Fatalf("Parse() Invalidator.MaxWorkers == '%d', want '%d'", cfg.Invalidator.MaxWorkers, invalidatorMaxWorkers)
-	}
-
-	proxyAddr := "0.0.0.0:6081"
-	if cfg.Proxy.Addr != proxyAddr {
-		t.Fatalf("Parse() Proxy.Addr == '%s', want '%s'", cfg.Proxy.Addr, proxyAddr)
-	}
-
-	proxyBackendsAddrs := []string{"1.2.3.4:5678"}
-	if !reflect.DeepEqual(cfg.Proxy.BackendsAddrs, proxyBackendsAddrs) {
-		t.Fatalf("Parse() Proxy.BackendsAddrs == '%v', want '%v'", cfg.Proxy.BackendsAddrs, proxyBackendsAddrs)
-	}
-
-	proxyResponseHeadersSet := []Header{{Name: "X-Theme", Value: "$(resp.header::Theme)"}}
-	if !reflect.DeepEqual(cfg.Proxy.Response.Headers.Set, proxyResponseHeadersSet) {
-		t.Fatalf("Parse() Proxy.Response.Headers.Set == '%v', want '%v'", cfg.Proxy.Response.Headers.Set, proxyResponseHeadersSet)
-	}
-
-	proxyResponseHeadersUnset := []Header{{Name: "Set-Cookie", When: "$(path) !~ '/preview/' && $(path) !~ '/exit_preview/' && $(cookie::is_preview) == 'True'"}}
-	if !reflect.DeepEqual(cfg.Proxy.Response.Headers.Unset, proxyResponseHeadersUnset) {
-		t.Fatalf("Parse() Proxy.Response.Headers.Unset == '%v', want '%v'", cfg.Proxy.Response.Headers.Unset, proxyResponseHeadersUnset)
-	}
-
-	proxyNocache := []string{"$(method) == 'POST'", "$(host) == 'www.kratgo.com'"}
-	if !reflect.DeepEqual(cfg.Proxy.Nocache, proxyNocache) {
-		t.Fatalf("Parse() Proxy.Nocache == '%v', want '%v'", cfg.Proxy.Nocache, proxyNocache)
-	}
-
-	adminAddr := "0.0.0.0:6082"
-	if cfg.Admin.Addr != adminAddr {
-		t.Fatalf("Parse() Admin.Addr == '%s', want '%s'", cfg.Admin.Addr, adminAddr)
-	}
 }
 
 func TestGetEvalParamName(t *testing.T) {
