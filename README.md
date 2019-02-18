@@ -17,6 +17,15 @@ Simple, lightweight and ultra-fast HTTP Cache to speed up your websites.
 - git
 
 
+## Features:
+
+- Cache proxy.
+- Load balancing beetwen backends.
+- Cache invalidation via API (Admin).
+- Configuration to non-cache certain requests.
+- Configuration to set or unset headers on especific requests.
+
+
 ## Install
 
 Clone the repository:
