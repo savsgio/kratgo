@@ -89,10 +89,8 @@ func TestAdmin_invalidateView(t *testing.T) {
 			actx.Request.SetBodyString(tt.args.body)
 
 			err = admin.invalidateView(actx)
-			if err != nil && !tt.want.err {
-				t.Fatalf("Unexpected error: %v", err)
-			} else if err == nil && tt.want.err {
-				t.Fatalf("Expected error: %v", err)
+			if (err != nil) != tt.want.err {
+				t.Fatalf("Admin.invalidateView() error == '%v', want '%v'", err, tt.want.err)
 			}
 
 			if tt.want.callAdd && !invalidatorMock.addCalled {

@@ -107,7 +107,7 @@ func TestParse(t *testing.T) {
 
 			cfg, err := Parse(tt.args.filePath)
 			if (err != nil) != tt.want.err {
-				t.Fatalf("New() error == '%v', want '%v'", err, tt.want.err)
+				t.Fatalf("Parse() error == '%v', want '%v'", err, tt.want.err)
 			}
 
 			if tt.want.err {

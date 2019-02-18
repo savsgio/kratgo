@@ -214,27 +214,27 @@ func TestAdmin_New(t *testing.T) {
 			}
 
 			if a.server == nil {
-				t.Errorf("Admin.New() server is '%v'", nil)
+				t.Errorf("New() server is '%v'", nil)
 			}
 
 			if a.httpScheme != httpScheme {
-				t.Errorf("Admin.New() httpScheme == '%s', want '%s'", a.httpScheme, httpScheme)
+				t.Errorf("New() httpScheme == '%s', want '%s'", a.httpScheme, httpScheme)
 			}
 
 			adminCachePtr := reflect.ValueOf(a.cache).Pointer()
 			testCachePtr := reflect.ValueOf(testCache).Pointer()
 			if adminCachePtr != testCachePtr {
-				t.Errorf("Admin.New() cache == '%d', want '%d'", adminCachePtr, testCachePtr)
+				t.Errorf("New() cache == '%d', want '%d'", adminCachePtr, testCachePtr)
 			}
 
 			adminInvalidatorPtr := reflect.ValueOf(a.invalidator).Pointer()
 			invalidatorPtr := reflect.ValueOf(invalidatorMock).Pointer()
 			if adminInvalidatorPtr != invalidatorPtr {
-				t.Errorf("Admin.New() invalidator == '%d', want '%d'", adminInvalidatorPtr, invalidatorPtr)
+				t.Errorf("New() invalidator == '%d', want '%d'", adminInvalidatorPtr, invalidatorPtr)
 			}
 
 			if a.log == nil {
-				t.Errorf("Admin.New() log is '%v'", nil)
+				t.Errorf("New() log is '%v'", nil)
 			}
 		})
 	}
