@@ -51,7 +51,7 @@ func TestKratgo_New(t *testing.T) {
 		MaxWorkers: 1,
 	}
 	cfgProxy := config.Proxy{
-		Addr:          "localhost:8000",
+		Addr:         "localhost:8000",
 		BackendAddrs: []string{"localhost:9990", "localhost:9991", "localhost:9993", "localhost:9994"},
 	}
 
