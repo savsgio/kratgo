@@ -52,7 +52,7 @@ func TestKratgo_New(t *testing.T) {
 	}
 	cfgProxy := config.Proxy{
 		Addr:          "localhost:8000",
-		BackendsAddrs: []string{"localhost:9990", "localhost:9991", "localhost:9993", "localhost:9994"},
+		BackendAddrs: []string{"localhost:9990", "localhost:9991", "localhost:9993", "localhost:9994"},
 	}
 
 	tests := []struct {

@@ -87,7 +87,7 @@ func testConfig() Config {
 	return Config{
 		FileConfig: config.Proxy{
 			Addr:          "localhost:8000",
-			BackendsAddrs: []string{"localhost:9990", "localhost:9991", "localhost:9993", "localhost:9994"},
+			BackendAddrs: []string{"localhost:9990", "localhost:9991", "localhost:9993", "localhost:9994"},
 		},
 		Cache:     testCache,
 		LogLevel:  logger.FATAL,
@@ -119,7 +119,7 @@ func TestProxy_New(t *testing.T) {
 				cfg: Config{
 					FileConfig: config.Proxy{
 						Addr:          "localhost:9999",
-						BackendsAddrs: []string{"localhost:8881", "localhost:8882"},
+						BackendAddrs: []string{"localhost:8881", "localhost:8882"},
 						Response: config.ProxyResponse{
 							Headers: config.ProxyResponseHeaders{
 								Set: []config.Header{
@@ -148,7 +148,7 @@ func TestProxy_New(t *testing.T) {
 				cfg: Config{
 					FileConfig: config.Proxy{
 						Addr:          "localhost:9999",
-						BackendsAddrs: []string{},
+						BackendAddrs: []string{},
 						Response: config.ProxyResponse{
 							Headers: config.ProxyResponseHeaders{
 								Set: []config.Header{
@@ -177,7 +177,7 @@ func TestProxy_New(t *testing.T) {
 				cfg: Config{
 					FileConfig: config.Proxy{
 						Addr:          "localhost:9999",
-						BackendsAddrs: []string{"localhost:8881", "localhost:8882"},
+						BackendAddrs: []string{"localhost:8881", "localhost:8882"},
 						Response: config.ProxyResponse{
 							Headers: config.ProxyResponseHeaders{
 								Set: []config.Header{
@@ -206,7 +206,7 @@ func TestProxy_New(t *testing.T) {
 				cfg: Config{
 					FileConfig: config.Proxy{
 						Addr:          "localhost:9999",
-						BackendsAddrs: []string{"localhost:8881", "localhost:8882"},
+						BackendAddrs: []string{"localhost:8881", "localhost:8882"},
 						Response: config.ProxyResponse{
 							Headers: config.ProxyResponseHeaders{
 								Set: []config.Header{
@@ -235,7 +235,7 @@ func TestProxy_New(t *testing.T) {
 				cfg: Config{
 					FileConfig: config.Proxy{
 						Addr:          "localhost:9999",
-						BackendsAddrs: []string{"localhost:8881", "localhost:8882"},
+						BackendAddrs: []string{"localhost:8881", "localhost:8882"},
 						Response: config.ProxyResponse{
 							Headers: config.ProxyResponseHeaders{
 								Set: []config.Header{
@@ -287,9 +287,9 @@ func TestProxy_New(t *testing.T) {
 				t.Errorf("New() httpScheme == '%v', want '%v'", p.httpScheme, httpScheme)
 			}
 
-			totalBackends := len(tt.args.cfg.FileConfig.BackendsAddrs)
-			if len(p.backends) != len(tt.args.cfg.FileConfig.BackendsAddrs) {
-				t.Errorf("New() backends == '%v', want '%v'", p.backends, tt.args.cfg.FileConfig.BackendsAddrs)
+			totalBackends := len(tt.args.cfg.FileConfig.BackendAddrs)
+			if len(p.backends) != len(tt.args.cfg.FileConfig.BackendAddrs) {
+				t.Errorf("New() backends == '%v', want '%v'", p.backends, tt.args.cfg.FileConfig.BackendAddrs)
 			}
 
 			if p.totalBackends != totalBackends {

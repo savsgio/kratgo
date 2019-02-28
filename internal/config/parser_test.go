@@ -25,7 +25,7 @@ invalidator:
 
 proxy:
   addr: 0.0.0.0:6081
-  backendsAddrs:
+  backendAddrs:
     [
       1.2.3.4:5678,
     ]
@@ -159,9 +159,9 @@ func TestParse(t *testing.T) {
 				t.Fatalf("Parse() Proxy.Addr == '%s', want '%s'", cfg.Proxy.Addr, proxyAddr)
 			}
 
-			proxyBackendsAddrs := []string{"1.2.3.4:5678"}
-			if !reflect.DeepEqual(cfg.Proxy.BackendsAddrs, proxyBackendsAddrs) {
-				t.Fatalf("Parse() Proxy.BackendsAddrs == '%v', want '%v'", cfg.Proxy.BackendsAddrs, proxyBackendsAddrs)
+			proxyBackendAddrs := []string{"1.2.3.4:5678"}
+			if !reflect.DeepEqual(cfg.Proxy.BackendAddrs, proxyBackendAddrs) {
+				t.Fatalf("Parse() Proxy.BackendAddrs == '%v', want '%v'", cfg.Proxy.BackendAddrs, proxyBackendAddrs)
 			}
 
 			proxyResponseHeadersSet := []Header{{Name: "X-Theme", Value: "$(resp.header::Theme)"}}

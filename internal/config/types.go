@@ -16,7 +16,7 @@ type Config struct {
 // Proxy ...
 type Proxy struct {
 	Addr          string        `yaml:"addr"`
-	BackendsAddrs []string      `yaml:"backendsAddrs"`
+	BackendAddrs []string      `yaml:"backendAddrs"`
 	Response      ProxyResponse `yaml:"response"`
 	Nocache       []string      `yaml:"nocache"`
 }

@@ -15,8 +15,8 @@ import (
 
 // New ...
 func New(cfg Config) (*Proxy, error) {
-	if len(cfg.FileConfig.BackendsAddrs) == 0 {
-		return nil, fmt.Errorf("Proxy.BackendsAddrs configuration is mandatory")
+	if len(cfg.FileConfig.BackendAddrs) == 0 {
+		return nil, fmt.Errorf("Proxy.BackendAddrs configuration is mandatory")
 	}
 
 	p := new(Proxy)
@@ -34,13 +34,13 @@ func New(cfg Config) (*Proxy, error) {
 	p.httpScheme = cfg.HTTPScheme
 	p.log = log
 
-	p.backends = make([]fetcher, len(p.fileConfig.BackendsAddrs))
-	for i, addr := range p.fileConfig.BackendsAddrs {
+	p.backends = make([]fetcher, len(p.fileConfig.BackendAddrs))
+	for i, addr := range p.fileConfig.BackendAddrs {
 		p.backends[i] = &fasthttp.HostClient{
 			Addr: addr,
 		}
 	}
-	p.totalBackends = len(p.fileConfig.BackendsAddrs)
+	p.totalBackends = len(p.fileConfig.BackendAddrs)
 
 	p.tools = sync.Pool{
 		New: func() interface{} {
