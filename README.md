@@ -25,6 +25,10 @@ Simple, lightweight and ultra-fast HTTP Cache to speed up your websites.
 - Configuration to non-cache certain requests.
 - Configuration to set or unset headers on especific requests.
 
+## General
+
+To known if request pass across Kratgo Cache in backend servers, check the request header `X-Kratgo-Cache` with value `true`.
+
 
 ## Install
 
