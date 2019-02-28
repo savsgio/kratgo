@@ -82,7 +82,7 @@ func (i *Invalidator) invalidateAll(invalidationType invType, e Entry) {
 		}
 
 		if err = i.invalidate(invalidationType, v.Key(), *entry, e); err != nil {
-			i.log.Error(err)
+			i.log.Errorf("Could not invalidate '%v': %v", *entry, err)
 		}
 
 		entry.Reset()

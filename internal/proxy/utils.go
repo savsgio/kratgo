@@ -117,3 +117,36 @@ func checkIfNoCache(req *fasthttp.Request, resp *fasthttp.Response, rules []rule
 
 	return false, nil
 }
+
+func processHeaderRules(req *fasthttp.Request, resp *fasthttp.Response, rules []headerRule, params *evalParams) error {
+	for _, r := range rules {
+		params.reset()
+
+		executeHeaderRule := true
+
+		if r.expr != nil {
+			for _, p := range r.params {
+				params.set(p.name, getEvalValue(req, resp, p.name, p.subKey))
+			}
+
+			result, err := r.expr.Evaluate(params.all())
+			if err != nil {
+				return err
+			}
+
+			executeHeaderRule = result.(bool)
+		}
+
+		if !executeHeaderRule {
+			continue
+		}
+
+		if r.action == setHeaderAction {
+			resp.Header.Set(r.name, getEvalValue(req, resp, r.value.value, r.value.subKey))
+		} else {
+			resp.Header.Del(r.name)
+		}
+	}
+
+	return nil
+}

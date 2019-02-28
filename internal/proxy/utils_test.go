@@ -345,3 +345,138 @@ func Test_checkIfNoCache(t *testing.T) {
 		})
 	}
 }
+
+func TestHTTPClient_processHeaderRules(t *testing.T) {
+	type args struct {
+		processWithoutRuleParams bool
+	}
+
+	type want struct {
+		err bool
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "Ok",
+			args: args{
+				processWithoutRuleParams: false,
+			},
+			want: want{
+				err: false,
+			},
+		},
+		{
+			name: "Error",
+			args: args{
+				processWithoutRuleParams: true,
+			},
+			want: want{
+				err: true,
+			},
+		},
+	}
+
+	setName1 := "Kratgo"
+	setValue1 := "Fast"
+	setWhen1 := "$(resp.header::Content-Type) == 'text/html'"
+
+	setName2 := "X-Data"
+	setValue2 := "1"
+
+	// This header not fulfill the condition because $(req.header::X-Data) == '123'
+	setName3 := "X-NotSet"
+	setValue3 := "yes"
+	setWhen3 := "$(req.header::X-Data) != '123'"
+	// ----
+
+	unsetName1 := "X-Delete"
+	unsetWhen1 := "$(resp.header::Content-Type) == 'text/html'"
+
+	unsetName2 := "X-MyHeader"
+
+	setHeadersRulesConfig := []config.Header{
+		{
+			Name:  setName1,
+			Value: setValue1,
+			When:  setWhen1,
+		},
+		{
+			Name:  setName2,
+			Value: setValue2,
+		},
+		{
+			Name:  setName3,
+			Value: setValue3,
+			When:  setWhen3,
+		},
+	}
+	unsetHeadersRulesConfig := []config.Header{
+		{
+			Name: unsetName1,
+			When: unsetWhen1,
+		},
+		{
+			Name: unsetName2,
+		},
+	}
+
+	cfg := testConfig()
+	cfg.FileConfig.Response.Headers.Set = setHeadersRulesConfig
+	cfg.FileConfig.Response.Headers.Unset = unsetHeadersRulesConfig
+	p, _ := New(cfg)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.args.processWithoutRuleParams {
+				for i := range p.headersRules {
+					p.headersRules[i].params = p.headersRules[i].params[:0]
+				}
+			}
+
+			params := acquireEvalParams()
+
+			req := fasthttp.AcquireRequest()
+			resp := fasthttp.AcquireResponse()
+
+			resp.Header.Set(unsetName1, "data")
+			resp.Header.Set("FakeHeader", "fake data")
+			resp.Header.Set("Content-Type", "text/html")
+			req.Header.Set("X-Data", "123")
+
+			err := processHeaderRules(req, resp, p.headersRules, params)
+			if (err != nil) != tt.want.err {
+				t.Errorf("Unexpected error: %v", err)
+			}
+
+			if tt.want.err {
+				return
+			}
+
+			if v := resp.Header.Peek(setName1); string(v) != setValue1 {
+				t.Errorf("httpClient.processHeaderRules() not set header '%s' with value '%s', want '%s==%s'",
+					setName1, setValue1, setName1, v)
+			}
+
+			if v := resp.Header.Peek(setName2); string(v) != setValue2 {
+				t.Errorf("httpClient.processHeaderRules() not set header '%s' with value '%s', want '%s==%s'",
+					setName2, setValue2, setName2, v)
+			}
+
+			if v := resp.Header.Peek(setName3); len(v) > 0 {
+				t.Errorf("httpClient.processHeaderRules() header '%s' is setted but not fulfill the condition", setName3)
+			}
+
+			if v := resp.Header.Peek(unsetName1); len(v) > 0 {
+				t.Errorf("httpClient.processHeaderRules() not unset header '%s'", unsetName1)
+			}
+
+			if v := resp.Header.Peek(unsetName2); len(v) > 0 {
+				t.Errorf("httpClient.processHeaderRules() not unset header '%s'", unsetName2)
+			}
+		})
+	}
+}

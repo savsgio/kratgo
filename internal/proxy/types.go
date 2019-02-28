@@ -45,9 +45,8 @@ type Proxy struct {
 }
 
 type proxyTools struct {
-	httpClient *httpClient
-	params     *evalParams
-	entry      *cache.Entry
+	params *evalParams
+	entry  *cache.Entry
 }
 
 type httpClient struct {

@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/savsgio/gotils"
 	"github.com/savsgio/kratgo/internal/cache"
 	"github.com/savsgio/kratgo/internal/config"
 
@@ -24,6 +25,28 @@ type mockServer struct {
 	listenAndServeCalled bool
 
 	mu sync.RWMutex
+}
+
+type mockBackend struct {
+	called bool
+
+	body       []byte
+	headers    map[string][]byte
+	statusCode int
+	err        error
+}
+
+func (mock *mockBackend) Do(req *fasthttp.Request, resp *fasthttp.Response) error {
+	mock.called = true
+
+	resp.SetBody(mock.body)
+	resp.SetStatusCode(mock.statusCode)
+
+	for k, v := range mock.headers {
+		resp.Header.SetCanonical(gotils.S2B(k), v)
+	}
+
+	return mock.err
 }
 
 var testCache *cache.Cache
@@ -382,7 +405,7 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 				rule: fmt.Sprintf("$(req.header::X-Data) == '%s'", "Kratgo"),
 			},
 			want: want{
-				regexExpr: regexp.MustCompile(fmt.Sprintf("%s([0-9]{2}) == '%s'", config.EvalReqHeaderVar, "Kratgo")),
+				regexExpr: regexp.MustCompile(fmt.Sprintf("%s([0-9]{1,2}) == '%s'", config.EvalReqHeaderVar, "Kratgo")),
 				params:    []ruleParam{{name: config.EvalReqHeaderVar, subKey: "X-Data"}},
 				err:       false,
 			},
@@ -393,7 +416,7 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 				rule: fmt.Sprintf("$(resp.header::X-Resp-Data) == '%s'", "Kratgo"),
 			},
 			want: want{
-				regexExpr: regexp.MustCompile(fmt.Sprintf("%s([0-9]{2}) == '%s'", config.EvalRespHeaderVar, "Kratgo")),
+				regexExpr: regexp.MustCompile(fmt.Sprintf("%s([0-9]{1,2}) == '%s'", config.EvalRespHeaderVar, "Kratgo")),
 				params:    []ruleParam{{name: config.EvalRespHeaderVar, subKey: "X-Resp-Data"}},
 				err:       false,
 			},
@@ -404,7 +427,7 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 				rule: fmt.Sprintf("$(cookie::X-Cookie-Data) == '%s'", "Kratgo"),
 			},
 			want: want{
-				regexExpr: regexp.MustCompile(fmt.Sprintf("%s([0-9]{2}) == '%s'", config.EvalCookieVar, "Kratgo")),
+				regexExpr: regexp.MustCompile(fmt.Sprintf("%s([0-9]{1,2}) == '%s'", config.EvalCookieVar, "Kratgo")),
 				params:    []ruleParam{{name: config.EvalCookieVar, subKey: "X-Cookie-Data"}},
 				err:       false,
 			},
@@ -656,7 +679,7 @@ func TestProxy_parseHeadersRules(t *testing.T) {
 
 				_, evalKey, evalSubKey := config.ParseConfigKeys(configHeader.Value)
 				if evalKey != "" {
-					if !regexp.MustCompile(fmt.Sprintf("%s([0-9]{2})", config.EvalReqHeaderVar)).MatchString(evalKey) {
+					if !regexp.MustCompile(fmt.Sprintf("%s([0-9]{1,2})", config.EvalReqHeaderVar)).MatchString(evalKey) {
 						t.Errorf("Proxy.parseHeadersRules() value.value == '%s', want '%s'", pr.value.value, evalKey)
 					}
 
@@ -909,7 +932,7 @@ func TestProxy_fetchFromBackend(t *testing.T) {
 
 			p.fileConfig.Nocache = tt.args.noCacheRules
 			p.backends = []fetcher{
-				&mockHTTPClient{
+				&mockBackend{
 					body:       tt.args.body,
 					statusCode: tt.args.statusCode,
 					headers:    tt.args.headers,
@@ -1098,7 +1121,7 @@ func TestProxy_handler(t *testing.T) {
 			entry.SetResponse(*response)
 			p.cache.SetBytes(tt.args.host, *entry)
 
-			httpClientMock := &mockHTTPClient{
+			httpClientMock := &mockBackend{
 				statusCode: 200,
 				err:        tt.args.httpClientError,
 			}
@@ -1170,7 +1193,7 @@ func BenchmarkHandler(b *testing.B) {
 		b.Fatal(err)
 	}
 	p.backends = []fetcher{
-		&mockHTTPClient{
+		&mockBackend{
 			body:       []byte("Benchmark Response Body"),
 			statusCode: 200,
 			headers: map[string][]byte{
@@ -1196,6 +1219,9 @@ func BenchmarkHandlerWithoutCache(b *testing.B) {
 	cfg.FileConfig.Nocache = []string{
 		fmt.Sprintf("$(path) == '%s'", path),
 	}
+	cfg.FileConfig.Response.Headers.Set = []config.Header{
+		{Name: "X-Data", Value: "1", When: fmt.Sprintf("$(path) == '%s'", path)},
+	}
 
 	p, err := New(cfg)
 	if err != nil {
@@ -1203,7 +1229,7 @@ func BenchmarkHandlerWithoutCache(b *testing.B) {
 	}
 
 	p.backends = []fetcher{
-		&mockHTTPClient{
+		&mockBackend{
 			body:       []byte("Benchmark Response Body"),
 			statusCode: 200,
 			headers: map[string][]byte{

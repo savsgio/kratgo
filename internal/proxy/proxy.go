@@ -45,9 +45,8 @@ func New(cfg Config) (*Proxy, error) {
 	p.tools = sync.Pool{
 		New: func() interface{} {
 			return &proxyTools{
-				httpClient: acquireHTTPClient(),
-				params:     acquireEvalParams(),
-				entry:      cache.AcquireEntry(),
+				params: acquireEvalParams(),
+				entry:  cache.AcquireEntry(),
 			}
 		},
 	}
@@ -72,7 +71,6 @@ func (p *Proxy) acquireTools() *proxyTools {
 }
 
 func (p *Proxy) releaseTools(pt *proxyTools) {
-	pt.httpClient.reset()
 	pt.params.reset()
 	pt.entry.Reset()
 
@@ -183,37 +181,33 @@ func (p *Proxy) saveBackendResponse(cacheKey, path []byte, resp *fasthttp.Respon
 }
 
 func (p *Proxy) fetchFromBackend(cacheKey, path []byte, ctx *fasthttp.RequestCtx, pt *proxyTools) error {
+	req, resp := &ctx.Request, &ctx.Response
+
 	if p.log.DebugEnabled() {
 		p.log.Debugf("%s - %s", ctx.Method(), ctx.Path())
 	}
 
-	cloneHeaders(&pt.httpClient.req.Header, &ctx.Request.Header)
-	pt.httpClient.setMethodBytes(ctx.Method())
-	pt.httpClient.setRequestURIBytes(path)
-	pt.httpClient.setRequestBody(ctx.PostBody())
+	for _, header := range hopHeaders {
+		req.Header.Del(header)
+	}
 
-	if err := pt.httpClient.do(p.getBackend()); err != nil {
+	if err := p.getBackend().Do(req, resp); err != nil {
 		return fmt.Errorf("Could not fetch response from backend: %v", err)
 	}
 
-	if err := pt.httpClient.processHeaderRules(p.headersRules, pt.params); err != nil {
+	if err := processHeaderRules(req, resp, p.headersRules, pt.params); err != nil {
 		return fmt.Errorf("Could not process headers rules: %v", err)
 	}
-	pt.httpClient.copyReqHeaderTo(&ctx.Request.Header)
-	pt.httpClient.copyRespHeaderTo(&ctx.Response.Header)
 
-	location := pt.httpClient.respHeaderPeek(headerLocation)
+	location := ctx.Response.Header.Peek(headerLocation)
 	if len(location) > 0 {
 		return nil
 	}
 
-	noCache, err := checkIfNoCache(pt.httpClient.req, pt.httpClient.resp, p.nocacheRules, pt.params)
+	noCache, err := checkIfNoCache(req, resp, p.nocacheRules, pt.params)
 	if err != nil {
 		return err
 	}
-
-	ctx.SetStatusCode(pt.httpClient.statusCode())
-	ctx.SetBody(pt.httpClient.body())
 
 	if noCache || ctx.Response.StatusCode() != fasthttp.StatusOK {
 		return nil

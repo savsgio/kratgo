@@ -254,7 +254,7 @@ func TestGetEvalParamName(t *testing.T) {
 				key: configReqHeaderVar,
 			},
 			want: want{
-				regexEvalKey: regexp.MustCompile(fmt.Sprintf("%s([0-9]{2})", EvalReqHeaderVar)),
+				regexEvalKey: regexp.MustCompile(fmt.Sprintf("%s([0-9]{1,2})", EvalReqHeaderVar)),
 			},
 		},
 		{
@@ -263,7 +263,7 @@ func TestGetEvalParamName(t *testing.T) {
 				key: configRespHeaderVar,
 			},
 			want: want{
-				regexEvalKey: regexp.MustCompile(fmt.Sprintf("%s([0-9]{2})", EvalRespHeaderVar)),
+				regexEvalKey: regexp.MustCompile(fmt.Sprintf("%s([0-9]{1,2})", EvalRespHeaderVar)),
 			},
 		},
 		{
@@ -272,7 +272,7 @@ func TestGetEvalParamName(t *testing.T) {
 				key: configCookieVar,
 			},
 			want: want{
-				regexEvalKey: regexp.MustCompile(fmt.Sprintf("%s([0-9]{2})", EvalCookieVar)),
+				regexEvalKey: regexp.MustCompile(fmt.Sprintf("%s([0-9]{1,2})", EvalCookieVar)),
 			},
 		},
 		{
@@ -378,7 +378,7 @@ func TestParseConfigKeys(t *testing.T) {
 			want: want{
 				configKey:    "$(req.header::X-Data)",
 				evalSubKey:   "X-Data",
-				regexEvalKey: regexp.MustCompile(fmt.Sprintf("%s([0-9]{2})", EvalReqHeaderVar)),
+				regexEvalKey: regexp.MustCompile(fmt.Sprintf("%s([0-9]{1,2})", EvalReqHeaderVar)),
 			},
 		},
 		{
@@ -389,7 +389,7 @@ func TestParseConfigKeys(t *testing.T) {
 			want: want{
 				configKey:    "$(resp.header::X-Data)",
 				evalSubKey:   "X-Data",
-				regexEvalKey: regexp.MustCompile(fmt.Sprintf("%s([0-9]{2})", EvalRespHeaderVar)),
+				regexEvalKey: regexp.MustCompile(fmt.Sprintf("%s([0-9]{1,2})", EvalRespHeaderVar)),
 			},
 		},
 		{
@@ -400,7 +400,7 @@ func TestParseConfigKeys(t *testing.T) {
 			want: want{
 				configKey:    "$(cookie::Kratgo)",
 				evalSubKey:   "Kratgo",
-				regexEvalKey: regexp.MustCompile(fmt.Sprintf("%s([0-9]{2})", EvalCookieVar)),
+				regexEvalKey: regexp.MustCompile(fmt.Sprintf("%s([0-9]{1,2})", EvalCookieVar)),
 			},
 		},
 		{
