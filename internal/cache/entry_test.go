@@ -98,7 +98,7 @@ func TestEntry_allocResponse(t *testing.T) {
 	}
 
 	e.Responses = e.Responses[:len(e.Responses)-1]
-	e.Responses, r = e.allocResponse(e.Responses)
+	e.Responses, _ = e.allocResponse(e.Responses)
 
 	if cap(e.Responses) != wantCapacity {
 		t.Errorf("Entry.allocResponse() responses capacity == '%d', want '%d'", cap(e.Responses), wantCapacity)

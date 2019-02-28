@@ -56,7 +56,7 @@ func TestResponse_allocHeader(t *testing.T) {
 	}
 
 	r.Headers = r.Headers[:len(r.Headers)-1]
-	r.Headers, h = r.allocHeader(r.Headers)
+	r.Headers, _ = r.allocHeader(r.Headers)
 
 	if cap(r.Headers) != wantCapacity {
 		t.Errorf("Response.allocHeader() headers capacity == '%d', want '%d'", cap(r.Headers), wantCapacity)
