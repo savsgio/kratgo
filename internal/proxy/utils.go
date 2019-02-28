@@ -63,30 +63,6 @@ func cloneHeaders(dst, src *fasthttp.RequestHeader) {
 	})
 }
 
-func decodeResponseBody(resp *fasthttp.Response, ctx *fasthttp.RequestCtx) error {
-	encoding := gotils.B2S(resp.Header.Peek(headerContentEncoding))
-	switch encoding {
-	case "gzip":
-		body, err := resp.BodyGunzip()
-		if err != nil {
-			return err
-		}
-		ctx.SetBody(body)
-
-	case "deflate":
-		body, err := resp.BodyInflate()
-		if err != nil {
-			return err
-		}
-		ctx.SetBody(body)
-
-	default:
-		resp.BodyWriteTo(ctx)
-	}
-
-	return nil
-}
-
 func getEvalValue(req *fasthttp.Request, resp *fasthttp.Response, name, key string) string {
 	value := name
 

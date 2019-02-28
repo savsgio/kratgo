@@ -15,6 +15,36 @@ func getEntryTest() Entry {
 	}
 }
 
+func TestAcquireEntry(t *testing.T) {
+	e := AcquireEntry()
+	if e == nil {
+		t.Errorf("AcquireEntry() returns '%v'", nil)
+	}
+}
+
+func TestReleaseEntry(t *testing.T) {
+	e := AcquireEntry()
+	e.Host = "www.kratgo.es"
+	e.Path = "/fast"
+	e.Header.Key = "X-Data"
+	e.Header.Value = "1"
+
+	ReleaseEntry(e)
+
+	if e.Host != "" {
+		t.Errorf("ReleaseEntry() entry has not been reset")
+	}
+	if e.Path != "" {
+		t.Errorf("ReleaseEntry() entry has not been reset")
+	}
+	if e.Header.Key != "" {
+		t.Errorf("ReleaseEntry() entry has not been reset")
+	}
+	if e.Header.Value != "" {
+		t.Errorf("ReleaseEntry() entry has not been reset")
+	}
+}
+
 func TestHeader_Reset(t *testing.T) {
 	e := getEntryTest()
 

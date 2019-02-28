@@ -2,6 +2,7 @@ package invalidator
 
 import (
 	"os"
+	"reflect"
 	"testing"
 	"time"
 
@@ -49,6 +50,84 @@ func testConfig() Config {
 		Cache:      testCache,
 		LogLevel:   logger.ERROR,
 		LogOutput:  os.Stderr,
+	}
+}
+
+func TestInvalidator_New(t *testing.T) {
+	type args struct {
+		cfg Config
+	}
+
+	type want struct {
+		err bool
+	}
+
+	logLevel := logger.FATAL
+	logOutput := os.Stderr
+
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "Ok",
+			args: args{
+				cfg: Config{
+					FileConfig: config.Invalidator{
+						MaxWorkers: 1,
+					},
+					Cache:     testCache,
+					LogLevel:  logLevel,
+					LogOutput: logOutput,
+				},
+			},
+			want: want{
+				err: false,
+			},
+		},
+		{
+			name: "Error",
+			args: args{
+				cfg: Config{
+					Cache:     testCache,
+					LogLevel:  logLevel,
+					LogOutput: logOutput,
+				},
+			},
+			want: want{
+				err: true,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			i, err := New(tt.args.cfg)
+			if (err != nil) != tt.want.err {
+				t.Errorf("New() Unexpected error: %v", err)
+			}
+
+			if tt.want.err {
+				return
+			}
+
+			if !reflect.DeepEqual(i.fileConfig, tt.args.cfg.FileConfig) {
+				t.Errorf("New() fileConfig == '%v', want '%v'", i.fileConfig, tt.args.cfg.FileConfig)
+			}
+
+			if reflect.ValueOf(i.cache).Pointer() != reflect.ValueOf(testCache).Pointer() {
+				t.Errorf("New() fileConfig == '%p', want '%p'", i.cache, testCache)
+			}
+
+			if i.chEntries == nil {
+				t.Errorf("New() chEntries is '%v'", nil)
+			}
+
+			if i.log == nil {
+				t.Errorf("New() log is '%v'", nil)
+			}
+		})
 	}
 }
 
@@ -288,9 +367,14 @@ func TestInvalidator_invalidate(t *testing.T) {
 }
 
 func TestInvalidator_invalidateAll(t *testing.T) {
-	type cacheData struct {
-		host      string
-		responses []cache.Response
+	type args struct {
+		invalidationType invType
+		entry            cache.Entry
+		e                Entry
+	}
+
+	type want struct {
+		foundInCache bool
 	}
 
 	path := []byte("/fast")

@@ -16,6 +16,7 @@ type mockHTTPClient struct {
 	body       []byte
 	headers    map[string][]byte
 	statusCode int
+	err        error
 }
 
 func (mock *mockHTTPClient) Do(req *fasthttp.Request, resp *fasthttp.Response) error {
@@ -28,7 +29,26 @@ func (mock *mockHTTPClient) Do(req *fasthttp.Request, resp *fasthttp.Response) e
 		resp.Header.SetCanonical(gotils.S2B(k), v)
 	}
 
-	return nil
+	return mock.err
+}
+
+func TestAcquireHTTPClient(t *testing.T) {
+	hc := acquireHTTPClient()
+	if hc == nil {
+		t.Errorf("acquireHTTPClient() returns '%v'", nil)
+	}
+}
+
+func TestReleaseHTTPClient(t *testing.T) {
+	hc := acquireHTTPClient()
+
+	hc.executeHeaderRule = true
+
+	releaseHTTPClient(hc)
+
+	if hc.executeHeaderRule {
+		t.Errorf("releaseEvalParams() http client has not been reset")
+	}
 }
 
 func TestHTTPClient_do(t *testing.T) {
@@ -39,6 +59,10 @@ func TestHTTPClient_do(t *testing.T) {
 
 	if !mockFetcher.called {
 		t.Error("httpClient.do() fetcher.Do() is not called")
+	}
+
+	if v := hc.req.Header.Peek(clientReqHeaderKey); string(v) != clientReqHeaderValue {
+		t.Errorf("The header '%s = %s' not found in request", clientReqHeaderKey, clientReqHeaderValue)
 	}
 }
 
@@ -151,6 +175,39 @@ func TestHTTPClient_body(t *testing.T) {
 }
 
 func TestHTTPClient_processHeaderRules(t *testing.T) {
+	type args struct {
+		processWithoutRuleParams bool
+	}
+
+	type want struct {
+		err bool
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "Ok",
+			args: args{
+				processWithoutRuleParams: false,
+			},
+			want: want{
+				err: false,
+			},
+		},
+		{
+			name: "Error",
+			args: args{
+				processWithoutRuleParams: true,
+			},
+			want: want{
+				err: true,
+			},
+		},
+	}
+
 	setName1 := "Kratgo"
 	setValue1 := "Fast"
 	setWhen1 := "$(resp.header::Content-Type) == 'text/html'"
@@ -195,43 +252,58 @@ func TestHTTPClient_processHeaderRules(t *testing.T) {
 		},
 	}
 
-	p, _ := New(testConfig())
-	p.parseHeadersRules(setHeaderAction, setHeadersRulesConfig)
-	p.parseHeadersRules(unsetHeaderAction, unsetHeadersRulesConfig)
+	cfg := testConfig()
+	cfg.FileConfig.Response.Headers.Set = setHeadersRulesConfig
+	cfg.FileConfig.Response.Headers.Unset = unsetHeadersRulesConfig
+	p, _ := New(cfg)
 
-	params := acquireEvalParams()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.args.processWithoutRuleParams {
+				for i := range p.headersRules {
+					p.headersRules[i].params = p.headersRules[i].params[:0]
+				}
+			}
 
-	hc := acquireHTTPClient()
+			params := acquireEvalParams()
 
-	hc.resp.Header.Set(unsetName1, "data")
-	hc.resp.Header.Set("FakeHeader", "fake data")
-	hc.resp.Header.Set("Content-Type", "text/html")
-	hc.req.Header.Set("X-Data", "123")
+			hc := acquireHTTPClient()
 
-	err := hc.processHeaderRules(p.headersRules, params)
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
+			hc.resp.Header.Set(unsetName1, "data")
+			hc.resp.Header.Set("FakeHeader", "fake data")
+			hc.resp.Header.Set("Content-Type", "text/html")
+			hc.req.Header.Set("X-Data", "123")
 
-	if v := hc.resp.Header.Peek(setName1); string(v) != setValue1 {
-		t.Errorf("httpClient.processHeaderRules() not set header '%s' with value '%s', want '%s==%s'",
-			setName1, setValue1, setName1, v)
-	}
+			err := hc.processHeaderRules(p.headersRules, params)
+			if (err != nil) != tt.want.err {
+				t.Errorf("Unexpected error: %v", err)
+			}
 
-	if v := hc.resp.Header.Peek(setName2); string(v) != setValue2 {
-		t.Errorf("httpClient.processHeaderRules() not set header '%s' with value '%s', want '%s==%s'",
-			setName2, setValue2, setName2, v)
-	}
+			if tt.want.err {
+				return
+			}
 
-	if v := hc.resp.Header.Peek(setName3); len(v) > 0 {
-		t.Errorf("httpClient.processHeaderRules() header '%s' is setted but not fulfill the condition", setName3)
-	}
+			if v := hc.resp.Header.Peek(setName1); string(v) != setValue1 {
+				t.Errorf("httpClient.processHeaderRules() not set header '%s' with value '%s', want '%s==%s'",
+					setName1, setValue1, setName1, v)
+			}
 
-	if v := hc.resp.Header.Peek(unsetName1); len(v) > 0 {
-		t.Errorf("httpClient.processHeaderRules() not unset header '%s'", unsetName1)
-	}
+			if v := hc.resp.Header.Peek(setName2); string(v) != setValue2 {
+				t.Errorf("httpClient.processHeaderRules() not set header '%s' with value '%s', want '%s==%s'",
+					setName2, setValue2, setName2, v)
+			}
 
-	if v := hc.resp.Header.Peek(unsetName2); len(v) > 0 {
-		t.Errorf("httpClient.processHeaderRules() not unset header '%s'", unsetName2)
+			if v := hc.resp.Header.Peek(setName3); len(v) > 0 {
+				t.Errorf("httpClient.processHeaderRules() header '%s' is setted but not fulfill the condition", setName3)
+			}
+
+			if v := hc.resp.Header.Peek(unsetName1); len(v) > 0 {
+				t.Errorf("httpClient.processHeaderRules() not unset header '%s'", unsetName1)
+			}
+
+			if v := hc.resp.Header.Peek(unsetName2); len(v) > 0 {
+				t.Errorf("httpClient.processHeaderRules() not unset header '%s'", unsetName2)
+			}
+		})
 	}
 }

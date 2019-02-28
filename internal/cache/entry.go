@@ -125,10 +125,7 @@ func (e *Entry) DelResponse(path []byte) {
 
 // Marshal ...
 func Marshal(src Entry) ([]byte, error) {
-	b, err := src.MarshalMsg(nil)
-	if err != nil {
-		return nil, fmt.Errorf("Could not marshal: %v", err)
-	}
+	b, _ := src.MarshalMsg(nil)
 
 	return b, nil
 }

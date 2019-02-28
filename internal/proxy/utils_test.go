@@ -1,14 +1,11 @@
 package proxy
 
 import (
-	"bytes"
 	"strconv"
 	"testing"
 
 	"github.com/savsgio/kratgo/internal/config"
 
-	"github.com/klauspost/compress/gzip"
-	"github.com/klauspost/compress/zlib"
 	"github.com/valyala/fasthttp"
 )
 
@@ -99,74 +96,6 @@ func Test_cloneHeaders(t *testing.T) {
 
 	if !isK1InReq2 {
 		t.Errorf("cloneHeaders() the header '%s' is not cloned", k1)
-	}
-}
-
-func Test_decodeResponseBody(t *testing.T) {
-	type args struct {
-		encodeType string
-		body       string
-	}
-
-	body := "Kratgo always is fast"
-
-	var b bytes.Buffer
-	w1 := gzip.NewWriter(&b)
-	w1.Write([]byte(body))
-	w1.Close()
-	bodyGZIp := b.String()
-
-	b.Reset()
-
-	w2 := zlib.NewWriter(&b)
-	w2.Write([]byte(body))
-	w2.Close()
-	bodyDeflate := b.String()
-
-	tests := []struct {
-		name string
-		args args
-	}{
-		{
-			name: "gzip",
-			args: args{
-				encodeType: "gzip",
-				body:       bodyGZIp,
-			},
-		},
-		{
-			name: "deflate",
-			args: args{
-				encodeType: "deflate",
-				body:       bodyDeflate,
-			},
-		},
-		{
-			name: "raw",
-			args: args{
-				encodeType: "raw",
-				body:       body,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := new(fasthttp.RequestCtx)
-			resp := fasthttp.AcquireResponse()
-			resp.SetBodyString(tt.args.body)
-			resp.Header.Set(headerContentEncoding, tt.args.encodeType)
-
-			err := decodeResponseBody(resp, ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			respBody := string(ctx.Response.Body())
-			if respBody != body {
-				t.Errorf("decodeResponseBody() body = '%s', want '%s'", respBody, body)
-			}
-
-		})
 	}
 }
 
@@ -310,15 +239,16 @@ func Test_checkIfNoCache(t *testing.T) {
 		"$(method) == 'POST' && $(host) != 'www.kratgo.com'",
 	}
 	p, _ := New(cfg)
-	p.parseNocacheRules()
 
 	type args struct {
-		method string
-		host   string
+		method        string
+		host          string
+		delRuleParams bool
 	}
 
 	type want struct {
 		noCache bool
+		err     bool
 	}
 
 	tests := []struct {
@@ -334,6 +264,7 @@ func Test_checkIfNoCache(t *testing.T) {
 			},
 			want: want{
 				noCache: true,
+				err:     false,
 			},
 		},
 		{
@@ -344,6 +275,7 @@ func Test_checkIfNoCache(t *testing.T) {
 			},
 			want: want{
 				noCache: false,
+				err:     false,
 			},
 		},
 		{
@@ -354,6 +286,7 @@ func Test_checkIfNoCache(t *testing.T) {
 			},
 			want: want{
 				noCache: false,
+				err:     false,
 			},
 		},
 		{
@@ -364,6 +297,19 @@ func Test_checkIfNoCache(t *testing.T) {
 			},
 			want: want{
 				noCache: false,
+				err:     false,
+			},
+		},
+		{
+			name: "Error",
+			args: args{
+				method:        "GET",
+				host:          "www.example.com",
+				delRuleParams: true,
+			},
+			want: want{
+				noCache: false,
+				err:     true,
 			},
 		},
 	}
@@ -377,9 +323,20 @@ func Test_checkIfNoCache(t *testing.T) {
 			req.Header.SetMethod(tt.args.method)
 			req.Header.SetHost(tt.args.host)
 
+			if tt.args.delRuleParams {
+				for i := range p.nocacheRules {
+					r := &p.nocacheRules[i]
+					r.params = r.params[:0]
+				}
+			}
+
 			noCache, err := checkIfNoCache(req, resp, p.nocacheRules, params)
-			if err != nil {
-				t.Fatal(err)
+			if (err != nil) != tt.want.err {
+				t.Errorf("Unexpected error: %v", err)
+			}
+
+			if tt.want.err {
+				return
 			}
 
 			if noCache != tt.want.noCache {

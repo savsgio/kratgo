@@ -75,6 +75,82 @@ func Test_bigcacheConfig(t *testing.T) {
 	}
 }
 
+func TestNew(t *testing.T) {
+	type args struct {
+		cfg Config
+	}
+
+	type want struct {
+		err bool
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "Ok",
+			args: args{
+				cfg: Config{
+					FileConfig: config.Cache{
+						TTL:              1,
+						CleanFrequency:   1,
+						MaxEntries:       1,
+						MaxEntrySize:     1,
+						HardMaxCacheSize: 10,
+					},
+					LogLevel:  logger.FATAL,
+					LogOutput: os.Stderr,
+				},
+			},
+			want: want{
+				err: false,
+			},
+		},
+		{
+			name: "InvalidCleanFrequency",
+			args: args{
+				cfg: Config{
+					FileConfig: config.Cache{
+						TTL:              1,
+						CleanFrequency:   0,
+						MaxEntries:       1,
+						MaxEntrySize:     1,
+						HardMaxCacheSize: 10,
+					},
+					LogLevel:  logger.FATAL,
+					LogOutput: os.Stderr,
+				},
+			},
+			want: want{
+				err: true,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c, err := New(tt.args.cfg)
+			if (err != nil) != tt.want.err {
+				t.Errorf("New() error = '%v', want '%v'", err, tt.want.err)
+				return
+			}
+
+			if tt.want.err {
+				return
+			}
+
+			if !reflect.DeepEqual(c.fileConfig, tt.args.cfg.FileConfig) {
+				t.Errorf("New() fileConfig == '%v', want '%v'", c.fileConfig, tt.args.cfg.FileConfig)
+			}
+
+			if c.bc == nil {
+				t.Errorf("New() bc is '%v'", nil)
+			}
+		})
+	}
+}
+
 func TestCache_SetAndGetAndDel(t *testing.T) {
 	e := getEntryTest()
 	entry := AcquireEntry()

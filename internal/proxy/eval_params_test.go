@@ -5,6 +5,24 @@ import (
 	"testing"
 )
 
+func TestAcquireEvalParams(t *testing.T) {
+	ep := acquireEvalParams()
+	if ep == nil {
+		t.Errorf("acquireEvalParams() returns '%v'", nil)
+	}
+}
+
+func TestReleaseEvalParams(t *testing.T) {
+	ep := acquireEvalParams()
+	ep.set("key", "value")
+
+	releaseEvalParams(ep)
+
+	if len(ep.p) > 0 {
+		t.Errorf("releaseEvalParams() entry has not been reset")
+	}
+}
+
 func Test_evalParams_set(t *testing.T) {
 	ep := acquireEvalParams()
 

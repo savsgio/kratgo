@@ -36,6 +36,26 @@ func getEntryTest() Entry {
 	}
 }
 
+func TestAcquireEntry(t *testing.T) {
+	e := AcquireEntry()
+	if e == nil {
+		t.Errorf("AcquireEntry() returns '%v'", nil)
+	}
+}
+
+func TestReleaseEntry(t *testing.T) {
+	e := AcquireEntry()
+	r := AcquireResponse()
+
+	e.SetResponse(*r)
+
+	ReleaseEntry(e)
+
+	if e.Len() > 0 {
+		t.Errorf("ReleaseEntry() entry has not been reset")
+	}
+}
+
 func TestEntry_Reset(t *testing.T) {
 	e := getEntryTest()
 	e.Reset()
@@ -64,7 +84,7 @@ func TestEntry_swap(t *testing.T) {
 func TestEntry_allocResponse(t *testing.T) {
 	e := getEntryTest()
 
-	length := len(e.Responses)
+	wantCapacity := cap(e.Responses) * 2 // Capacity is incremented by power of two
 
 	var r *Response
 	e.Responses, r = e.allocResponse(e.Responses)
@@ -73,8 +93,15 @@ func TestEntry_allocResponse(t *testing.T) {
 		t.Errorf("Entry.allocResponse() not returns a new response pointer")
 	}
 
-	if len(e.Responses) != length+1 {
-		t.Errorf("Entry.allocResponse() responses.len == '%d', want '%d'", len(e.Responses), length+1)
+	if cap(e.Responses) != wantCapacity {
+		t.Errorf("Entry.allocResponse() responses capacity == '%d', want '%d'", cap(e.Responses), wantCapacity)
+	}
+
+	e.Responses = e.Responses[:len(e.Responses)-1]
+	e.Responses, r = e.allocResponse(e.Responses)
+
+	if cap(e.Responses) != wantCapacity {
+		t.Errorf("Entry.allocResponse() responses capacity == '%d', want '%d'", cap(e.Responses), wantCapacity)
 	}
 }
 
@@ -145,14 +172,28 @@ func TestEntry_GetResponse(t *testing.T) {
 func TestEntry_SetResponse(t *testing.T) {
 	e := getEntryTest()
 
+	wantLength := e.Len() + 1
+
 	r := AcquireResponse()
 	r.Path = []byte("/kratgo/fast")
 	r.Body = []byte("Body Kratgo Fast")
 
 	e.SetResponse(*r)
 
+	length := e.Len()
+
 	if !e.HasResponse(r.Path) {
 		t.Errorf("Entry.SetResponse() has not been set a new response")
+	}
+
+	// Update respose (same r.Path)
+	r.Body = []byte("UPDATED Body Kratgo Fast")
+	r.SetHeader([]byte("key"), []byte("value"))
+
+	e.SetResponse(*r)
+
+	if length != wantLength {
+		t.Errorf("Entry.SetResponse() has not been update the existing response")
 	}
 }
 
@@ -186,20 +227,75 @@ func TestMarshal(t *testing.T) {
 }
 
 func TestUnmarshal(t *testing.T) {
+	type args struct {
+		charsToDelete int
+	}
+
+	type want struct {
+		empty bool
+		err   bool
+	}
+
 	e := getEntryTest()
-	entry := AcquireEntry()
+	marshalData, _ := Marshal(e)
 
-	marshalData, err := Marshal(e)
-	if err != nil {
-		t.Fatalf("Unexpected error: %v", err)
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "Ok",
+			args: args{
+				charsToDelete: 0,
+			},
+			want: want{
+				empty: false,
+				err:   false,
+			},
+		},
+		{
+			name: "Empty",
+			args: args{
+				charsToDelete: len(marshalData),
+			},
+			want: want{
+				empty: true,
+				err:   false,
+			},
+		},
+		{
+			name: "Error",
+			args: args{
+				charsToDelete: 1,
+			},
+			want: want{
+				err: true,
+			},
+		},
 	}
 
-	err = Unmarshal(entry, marshalData)
-	if err != nil {
-		t.Fatalf("Unexpected error: %v", err)
-	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			entry := AcquireEntry()
 
-	if !reflect.DeepEqual(e, *entry) {
-		t.Errorf("Marshal() == '%v', want '%v'", e, *entry)
+			err := Unmarshal(entry, marshalData[tt.args.charsToDelete:])
+			if (err != nil) != tt.want.err {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+
+			if tt.want.err {
+				return
+			}
+
+			if tt.want.empty {
+				if entry.Len() > 0 {
+					t.Errorf("Unmarshal() entry has not been empty: %v'", *entry)
+				}
+
+			} else if !reflect.DeepEqual(e, *entry) {
+				t.Errorf("Unmarshal() == '%v', want '%v'", *entry, e)
+			}
+		})
 	}
 }

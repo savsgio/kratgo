@@ -38,22 +38,14 @@ func New(cfg Config) (*Cache, error) {
 	bigcacheCFG.Logger = log
 	bigcacheCFG.Verbose = cfg.LogLevel == logger.DEBUG
 
-	bc, err := bigcache.NewBigCache(bigcacheCFG)
-	if err != nil {
-		return nil, err
-	}
-
-	c.bc = bc
+	c.bc, _ = bigcache.NewBigCache(bigcacheCFG)
 
 	return c, nil
 }
 
 // Set ...
 func (c *Cache) Set(key string, entry Entry) error {
-	data, err := Marshal(entry)
-	if err != nil {
-		return err
-	}
+	data, _ := Marshal(entry)
 
 	return c.bc.Set(key, data)
 }
@@ -66,10 +58,10 @@ func (c *Cache) SetBytes(key []byte, entry Entry) error {
 // Get ...
 func (c *Cache) Get(key string, dst *Entry) error {
 	data, err := c.bc.Get(key)
-	if err != nil && err != bigcache.ErrEntryNotFound {
-		return err
-	} else if err == bigcache.ErrEntryNotFound {
+	if err == bigcache.ErrEntryNotFound {
 		return nil
+	} else if err != nil {
+		return err
 	}
 
 	return Unmarshal(dst, data)

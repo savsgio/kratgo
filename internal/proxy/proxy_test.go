@@ -2,8 +2,10 @@ package proxy
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
+	"reflect"
 	"regexp"
 	"strings"
 	"sync"
@@ -65,8 +67,216 @@ func testConfig() Config {
 			BackendsAddrs: []string{"localhost:9990", "localhost:9991", "localhost:9993", "localhost:9994"},
 		},
 		Cache:     testCache,
-		LogLevel:  logger.ERROR,
+		LogLevel:  logger.FATAL,
 		LogOutput: os.Stderr,
+	}
+}
+
+func TestProxy_New(t *testing.T) {
+	type args struct {
+		cfg Config
+	}
+
+	type want struct {
+		err bool
+	}
+
+	logLevel := logger.FATAL
+	logOutput := os.Stderr
+	httpScheme := "http"
+
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "Ok",
+			args: args{
+				cfg: Config{
+					FileConfig: config.Proxy{
+						Addr:          "localhost:9999",
+						BackendsAddrs: []string{"localhost:8881", "localhost:8882"},
+						Response: config.ProxyResponse{
+							Headers: config.ProxyResponseHeaders{
+								Set: []config.Header{
+									{Name: "X-Kratgo", Value: "true", When: "$(resp.header::X-Data) == '1'"},
+								},
+								Unset: []config.Header{
+									{Name: "X-Data", When: "$(resp.header::X-Data) == '1'"},
+								},
+							},
+						},
+						Nocache: []string{"$(host) == 'localhost'"},
+					},
+					Cache:      testCache,
+					HTTPScheme: httpScheme,
+					LogLevel:   logLevel,
+					LogOutput:  logOutput,
+				},
+			},
+			want: want{
+				err: false,
+			},
+		},
+		{
+			name: "ErrorNoBackendAddrs",
+			args: args{
+				cfg: Config{
+					FileConfig: config.Proxy{
+						Addr:          "localhost:9999",
+						BackendsAddrs: []string{},
+						Response: config.ProxyResponse{
+							Headers: config.ProxyResponseHeaders{
+								Set: []config.Header{
+									{Name: "X-Kratgo", Value: "true", When: "$(resp.header::X-Data) == '1'"},
+								},
+								Unset: []config.Header{
+									{Name: "X-Data", When: "$(resp.header::X-Data) == '1'"},
+								},
+							},
+						},
+						Nocache: []string{"$(host) == 'localhost'"},
+					},
+					Cache:      testCache,
+					HTTPScheme: httpScheme,
+					LogLevel:   logLevel,
+					LogOutput:  logOutput,
+				},
+			},
+			want: want{
+				err: true,
+			},
+		},
+		{
+			name: "ErrorParseNoCacheRules",
+			args: args{
+				cfg: Config{
+					FileConfig: config.Proxy{
+						Addr:          "localhost:9999",
+						BackendsAddrs: []string{"localhost:8881", "localhost:8882"},
+						Response: config.ProxyResponse{
+							Headers: config.ProxyResponseHeaders{
+								Set: []config.Header{
+									{Name: "X-Kratgo", Value: "true", When: "$(resp.header::X-Data) == '1'"},
+								},
+								Unset: []config.Header{
+									{Name: "X-Data", When: "$(resp.header::X-Data) == '1'"},
+								},
+							},
+						},
+						Nocache: []string{"$(fake) == 'localhost'"},
+					},
+					Cache:      testCache,
+					HTTPScheme: httpScheme,
+					LogLevel:   logLevel,
+					LogOutput:  logOutput,
+				},
+			},
+			want: want{
+				err: true,
+			},
+		},
+		{
+			name: "ErrorParseHeaderRulesSet",
+			args: args{
+				cfg: Config{
+					FileConfig: config.Proxy{
+						Addr:          "localhost:9999",
+						BackendsAddrs: []string{"localhost:8881", "localhost:8882"},
+						Response: config.ProxyResponse{
+							Headers: config.ProxyResponseHeaders{
+								Set: []config.Header{
+									{Name: "X-Kratgo", Value: "true", When: "$(fake::X-Data) == '1'"},
+								},
+								Unset: []config.Header{
+									{Name: "X-Data", When: "$(resp.header::X-Data) == '1'"},
+								},
+							},
+						},
+						Nocache: []string{"$(host) == 'localhost'"},
+					},
+					Cache:      testCache,
+					HTTPScheme: httpScheme,
+					LogLevel:   logLevel,
+					LogOutput:  logOutput,
+				},
+			},
+			want: want{
+				err: true,
+			},
+		},
+		{
+			name: "ErrorParseHeaderRulesUnset",
+			args: args{
+				cfg: Config{
+					FileConfig: config.Proxy{
+						Addr:          "localhost:9999",
+						BackendsAddrs: []string{"localhost:8881", "localhost:8882"},
+						Response: config.ProxyResponse{
+							Headers: config.ProxyResponseHeaders{
+								Set: []config.Header{
+									{Name: "X-Kratgo", Value: "true", When: "$(resp.header::X-Data) == '1'"},
+								},
+								Unset: []config.Header{
+									{Name: "X-Data", When: "$(fake::X-Data) == '1'"},
+								},
+							},
+						},
+						Nocache: []string{"$(host) == 'localhost'"},
+					},
+					Cache:      testCache,
+					HTTPScheme: httpScheme,
+					LogLevel:   logLevel,
+					LogOutput:  logOutput,
+				},
+			},
+			want: want{
+				err: true,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p, err := New(tt.args.cfg)
+			if (err != nil) != tt.want.err {
+				t.Fatalf("New() error == '%v', want '%v'", err, tt.want.err)
+			}
+
+			if tt.want.err {
+				return
+			}
+
+			if !reflect.DeepEqual(p.fileConfig, tt.args.cfg.FileConfig) {
+				t.Errorf("New() fileConfig == '%v', want '%v'", p.fileConfig, tt.args.cfg.FileConfig)
+			}
+
+			if p.log == nil {
+				t.Errorf("New() fileConfig is '%v'", nil)
+			}
+
+			if p.cache == nil {
+				t.Errorf("New() cache is '%v'", nil)
+			}
+
+			if p.httpScheme != httpScheme {
+				t.Errorf("New() httpScheme == '%v', want '%v'", p.httpScheme, httpScheme)
+			}
+
+			totalBackends := len(tt.args.cfg.FileConfig.BackendsAddrs)
+			if len(p.backends) != len(tt.args.cfg.FileConfig.BackendsAddrs) {
+				t.Errorf("New() backends == '%v', want '%v'", p.backends, tt.args.cfg.FileConfig.BackendsAddrs)
+			}
+
+			if p.totalBackends != totalBackends {
+				t.Errorf("New() totalBackends == '%v', want '%v'", p.totalBackends, totalBackends)
+			}
+
+			if p.tools.New == nil {
+				t.Errorf("New() tools.New is '%v'", nil)
+			}
+		})
 	}
 }
 
@@ -272,22 +482,66 @@ func TestProxy_newEvaluableExpression(t *testing.T) {
 }
 
 func TestProxy_parseNocacheRules(t *testing.T) {
+	type args struct {
+		rules []string
+	}
+
+	type want struct {
+		err bool
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "Ok",
+			args: args{
+				rules: []string{
+					"$(req.header::X-Requested-With) == 'XMLHttpRequest'",
+					"$(host) == 'www.kratgo.es' || $(req.header::X-Data) != 'Kratgo'",
+				},
+			},
+			want: want{
+				err: false,
+			},
+		},
+		{
+			name: "Error",
+			args: args{
+				rules: []string{
+					"$(fake::X-Requested-With) == 'XMLHttpRequest'",
+				},
+			},
+			want: want{
+				err: true,
+			},
+		},
+	}
+
 	p, err := New(testConfig())
 	if err != nil {
 		t.Fatal(err)
 	}
-	p.fileConfig.Nocache = []string{
-		"$(req.header::X-Requested-With) == 'XMLHttpRequest'",
-		"$(host) == 'www.kratgo.es' || $(req.header::X-Data) != 'Kratgo'",
-	}
 
-	err = p.parseNocacheRules()
-	if err != nil {
-		t.Fatal(err)
-	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p.fileConfig.Nocache = tt.args.rules
 
-	if len(p.fileConfig.Nocache) != len(p.nocacheRules) {
-		t.Errorf("Proxy.parseNocacheRules() parsed %d rules, want %d", len(p.fileConfig.Nocache), len(p.nocacheRules))
+			err := p.parseNocacheRules()
+			if (err != nil) != tt.want.err {
+				t.Errorf("Proxy.parseNocacheRules() Unexpected error: %v", err)
+			}
+
+			if tt.want.err {
+				return
+			}
+
+			if len(p.fileConfig.Nocache) != len(p.nocacheRules) {
+				t.Errorf("Proxy.parseNocacheRules() parsed %d rules, want %d", len(p.fileConfig.Nocache), len(p.nocacheRules))
+			}
+		})
 	}
 }
 
@@ -319,7 +573,7 @@ func TestProxy_parseHeadersRules(t *testing.T) {
 					},
 					{
 						Name:  "X-Data",
-						Value: "$(version)",
+						Value: "$(req.header::X-Data)",
 					},
 				},
 			},
@@ -347,6 +601,21 @@ func TestProxy_parseHeadersRules(t *testing.T) {
 				err:    false,
 			},
 		},
+		{
+			name: "Error",
+			args: args{
+				action: unsetHeaderAction,
+				rules: []config.Header{
+					{
+						Name: "X-Data",
+						When: "$(fake) == /kratgo",
+					},
+				},
+			},
+			want: want{
+				err: true,
+			},
+		},
 	}
 
 	p, err := New(testConfig())
@@ -359,46 +628,47 @@ func TestProxy_parseHeadersRules(t *testing.T) {
 
 		t.Run(tt.name, func(t *testing.T) {
 			err = p.parseHeadersRules(tt.args.action, tt.args.rules)
-			if (tt.want.err && err == nil) || (!tt.want.err && err != nil) {
-				t.Fatalf("Proxy.parseHeadersRules() returns error '%v', want error '%v'", err, tt.want.err)
+			if (err != nil) != tt.want.err {
+				t.Fatalf("Proxy.parseHeadersRules() Unexpected error: %v", err)
 			}
 
-			if !tt.want.err {
-				if len(tt.args.rules) != len(p.headersRules) {
-					t.Errorf("Proxy.parseHeadersRules() parsed %d rules, want %d", len(p.headersRules), len(tt.args.rules))
+			if tt.want.err {
+				return
+			}
+
+			if len(tt.args.rules) != len(p.headersRules) {
+				t.Errorf("Proxy.parseHeadersRules() parsed %d rules, want %d", len(p.headersRules), len(tt.args.rules))
+			}
+
+			for i, pr := range p.headersRules {
+				if tt.want.action != pr.action {
+					t.Errorf("Proxy.parseHeadersRules() action == '%d', want '%d'", pr.action, tt.want.action)
 				}
 
-				for i, pr := range p.headersRules {
-					if tt.want.action != pr.action {
-						t.Errorf("Proxy.parseHeadersRules() action == '%d', want '%d'", pr.action, tt.want.action)
+				configHeader := tt.args.rules[i]
+				if configHeader.When != "" && pr.expr == nil {
+					t.Errorf("Proxy.parseHeadersRules() Proxy.headersRules.When '%s' has not be parsed", configHeader.When)
+				}
+
+				if configHeader.Name != pr.name {
+					t.Errorf("Proxy.parseHeadersRules() name == '%s', want '%s'", configHeader.Name, pr.name)
+				}
+
+				_, evalKey, evalSubKey := config.ParseConfigKeys(configHeader.Value)
+				if evalKey != "" {
+					if !regexp.MustCompile(fmt.Sprintf("%s([0-9]{2})", config.EvalReqHeaderVar)).MatchString(evalKey) {
+						t.Errorf("Proxy.parseHeadersRules() value.value == '%s', want '%s'", pr.value.value, evalKey)
 					}
 
-					configHeader := tt.args.rules[i]
-					if configHeader.When != "" && pr.expr == nil {
-						t.Errorf("Proxy.parseHeadersRules() Proxy.headersRules.When '%s' has not be parsed", configHeader.When)
+					if evalSubKey != pr.value.subKey {
+						t.Errorf("Proxy.parseHeadersRules() value.subKey == '%s', want '%s'", pr.value.subKey, evalSubKey)
 					}
-
-					if configHeader.Name != pr.name {
-						t.Errorf("Proxy.parseHeadersRules() name == '%s', want '%s'", configHeader.Name, pr.name)
-					}
-
-					_, evalKey, evalSubKey := config.ParseConfigKeys(configHeader.Value)
-					if evalKey != "" {
-						if evalKey != pr.value.value {
-							t.Errorf("Proxy.parseHeadersRules() value.value == '%s', want '%s'", pr.value.value, evalKey)
-						}
-
-						if evalSubKey != pr.value.subKey {
-							t.Errorf("Proxy.parseHeadersRules() value.subKey == '%s', want '%s'", pr.value.subKey, evalSubKey)
-						}
-					} else {
-						if configHeader.Value != pr.value.value {
-							t.Errorf("Proxy.parseHeadersRules() value == '%s', want '%s'", pr.value.value, configHeader.Value)
-						}
+				} else {
+					if configHeader.Value != pr.value.value {
+						t.Errorf("Proxy.parseHeadersRules() value == '%s', want '%s'", pr.value.value, configHeader.Value)
 					}
 				}
 			}
-
 		})
 	}
 }
@@ -466,10 +736,16 @@ func TestProxy_fetchFromBackend(t *testing.T) {
 		headers      map[string][]byte
 		statusCode   int
 		noCacheRules []string
+		headersRules []config.Header
+
+		httpClientError              error
+		forceProcessHeaderRulesError bool
+		forceCheckIfNoCacheError     bool
 	}
 
 	type want struct {
 		saveInCache bool
+		err         bool
 	}
 
 	tests := []struct {
@@ -493,6 +769,7 @@ func TestProxy_fetchFromBackend(t *testing.T) {
 			},
 			want: want{
 				saveInCache: true,
+				err:         false,
 			},
 		},
 		{
@@ -509,6 +786,7 @@ func TestProxy_fetchFromBackend(t *testing.T) {
 			},
 			want: want{
 				saveInCache: false,
+				err:         false,
 			},
 		},
 		{
@@ -528,6 +806,7 @@ func TestProxy_fetchFromBackend(t *testing.T) {
 			},
 			want: want{
 				saveInCache: false,
+				err:         false,
 			},
 		},
 		{
@@ -544,28 +823,101 @@ func TestProxy_fetchFromBackend(t *testing.T) {
 			},
 			want: want{
 				saveInCache: false,
+				err:         false,
+			},
+		},
+		{
+			name: "ErrorHttpClientDo",
+			args: args{
+				cacheKey: []byte("test"),
+				path:     []byte("/test/"),
+				body:     []byte("Test Body"),
+				method:   []byte("GET"),
+				headers: map[string][]byte{
+					"X-Data": []byte("1"),
+				},
+				statusCode:      404,
+				httpClientError: errors.New("Error"),
+			},
+			want: want{
+				saveInCache: false,
+				err:         true,
+			},
+		},
+		{
+			name: "ErrorParseHeaderRules",
+			args: args{
+				cacheKey: []byte("test"),
+				path:     []byte("/test/"),
+				body:     []byte("Test Body"),
+				method:   []byte("GET"),
+				headers: map[string][]byte{
+					"X-Data": []byte("1"),
+				},
+				statusCode: 404,
+				headersRules: []config.Header{
+					{Name: "X-Data", Value: "1", When: "$(path) == '/kratgo'"},
+				},
+				forceProcessHeaderRulesError: true,
+			},
+			want: want{
+				saveInCache: false,
+				err:         true,
+			},
+		},
+		{
+			name: "ErrorCheckIfNoCache",
+			args: args{
+				cacheKey: []byte("test"),
+				path:     []byte("/test/"),
+				body:     []byte("Test Body"),
+				method:   []byte("GET"),
+				headers: map[string][]byte{
+					"X-Data": []byte("1"),
+				},
+				statusCode: 404,
+				noCacheRules: []string{
+					"$(path) == '/test/'",
+				},
+				forceCheckIfNoCacheError: true,
+			},
+			want: want{
+				saveInCache: false,
+				err:         true,
 			},
 		},
 	}
 
-	p, err := New(testConfig())
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	for _, tt := range tests {
-		p.fileConfig.Nocache = tt.args.noCacheRules
-
-		p.backends = []fetcher{
-			&mockHTTPClient{
-				body:       tt.args.body,
-				statusCode: tt.args.statusCode,
-				headers:    tt.args.headers,
-			},
-		}
-		p.totalBackends = len(p.backends)
-
 		t.Run(tt.name, func(t *testing.T) {
+			cfg := testConfig()
+			cfg.FileConfig.Nocache = tt.args.noCacheRules
+			cfg.FileConfig.Response.Headers.Set = tt.args.headersRules
+
+			p, err := New(cfg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if tt.args.forceProcessHeaderRulesError {
+				p.headersRules[0].params = p.headersRules[0].params[:0]
+			}
+
+			if tt.args.forceCheckIfNoCacheError {
+				p.nocacheRules[0].params = p.nocacheRules[0].params[:0]
+			}
+
+			p.fileConfig.Nocache = tt.args.noCacheRules
+			p.backends = []fetcher{
+				&mockHTTPClient{
+					body:       tt.args.body,
+					statusCode: tt.args.statusCode,
+					headers:    tt.args.headers,
+					err:        tt.args.httpClientError,
+				},
+			}
+			p.totalBackends = len(tt.args.noCacheRules)
+
 			pt := p.acquireTools()
 			entry := cache.AcquireEntry()
 
@@ -577,8 +929,12 @@ func TestProxy_fetchFromBackend(t *testing.T) {
 			}
 
 			err = p.fetchFromBackend(tt.args.cacheKey, tt.args.path, ctx, pt)
-			if err != nil {
-				t.Fatal(err)
+			if (err != nil) != tt.want.err {
+				t.Errorf("Proxy.fetchFromBackend() Unexpected error: %v", err)
+			}
+
+			if tt.want.err {
+				return
 			}
 
 			err = p.cache.GetBytes(tt.args.cacheKey, entry)
@@ -615,13 +971,18 @@ func TestProxy_handler(t *testing.T) {
 	type args struct {
 		host         []byte
 		path         []byte
+		headers      []cache.ResponseHeader
 		cachePath    []byte
 		noCacheRules []string
+
+		forceProcessHeaderRulesError bool
+		httpClientError              error
 	}
 
 	type want struct {
 		getFromCache   bool
 		getFromBackend bool
+		err            bool
 	}
 
 	tests := []struct {
@@ -632,13 +993,17 @@ func TestProxy_handler(t *testing.T) {
 		{
 			name: "ResponseFromCache",
 			args: args{
-				host:      []byte("www.kratgo.com"),
-				path:      []byte("/test/"),
+				host: []byte("www.kratgo.com"),
+				path: []byte("/test/"),
+				headers: []cache.ResponseHeader{
+					{Key: []byte("X-Key"), Value: []byte("1")},
+				},
 				cachePath: []byte("/test/"),
 			},
 			want: want{
 				getFromCache:   true,
 				getFromBackend: false,
+				err:            false,
 			},
 		},
 		{
@@ -651,6 +1016,7 @@ func TestProxy_handler(t *testing.T) {
 			want: want{
 				getFromCache:   true,
 				getFromBackend: true,
+				err:            false,
 			},
 		},
 		{
@@ -663,6 +1029,7 @@ func TestProxy_handler(t *testing.T) {
 			want: want{
 				getFromCache:   false,
 				getFromBackend: true,
+				err:            false,
 			},
 		},
 		{
@@ -676,20 +1043,48 @@ func TestProxy_handler(t *testing.T) {
 			want: want{
 				getFromCache:   false,
 				getFromBackend: true,
+				err:            false,
+			},
+		},
+		{
+			name: "ErrorCheckIfNoCache",
+			args: args{
+				host: []byte("www.kratgo.com"),
+				noCacheRules: []string{
+					"$(host) == 'www.kratgo.com'",
+				},
+				forceProcessHeaderRulesError: true,
+			},
+			want: want{
+				err: true,
+			},
+		},
+		{
+			name: "ErrorFetchFromBackend",
+			args: args{
+				host:            []byte("www.kratgo.com"),
+				httpClientError: errors.New("Error"),
+			},
+			want: want{
+				err: true,
 			},
 		},
 	}
 
-	p, err := New(testConfig())
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	for _, tt := range tests {
-		p.fileConfig.Nocache = tt.args.noCacheRules
-		p.nocacheRules = p.nocacheRules[:0]
-
 		t.Run(tt.name, func(t *testing.T) {
+			cfg := testConfig()
+			cfg.FileConfig.Nocache = tt.args.noCacheRules
+
+			p, err := New(cfg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if tt.args.forceProcessHeaderRulesError {
+				p.nocacheRules[0].params = p.nocacheRules[0].params[:0]
+			}
+
 			ctx := new(fasthttp.RequestCtx)
 			ctx.Request.SetRequestURIBytes(tt.args.path)
 			ctx.Request.Header.SetHostBytes(tt.args.host)
@@ -697,29 +1092,47 @@ func TestProxy_handler(t *testing.T) {
 			entry := cache.AcquireEntry()
 			response := cache.AcquireResponse()
 			response.Path = tt.args.cachePath
+			for _, h := range tt.args.headers {
+				response.SetHeader(h.Key, h.Value)
+			}
 			entry.SetResponse(*response)
 			p.cache.SetBytes(tt.args.host, *entry)
 
 			httpClientMock := &mockHTTPClient{
 				statusCode: 200,
+				err:        tt.args.httpClientError,
 			}
 			p.backends = []fetcher{httpClientMock}
 			p.totalBackends = len(p.backends)
 
 			p.handler(ctx)
 
+			if (ctx.Response.StatusCode() == fasthttp.StatusInternalServerError) != tt.want.err {
+				t.Errorf("Proxy.handler() Unexpected error: %s", ctx.Response.Body())
+			}
+
+			if tt.want.err {
+				return
+			}
+
 			if tt.want.getFromCache {
 				if tt.want.getFromBackend && !httpClientMock.called {
-					t.Errorf("Procy.handler() response from backend '%v', want '%v'", false, true)
+					t.Errorf("Proxy.handler() response from backend '%v', want '%v'", false, true)
 				} else if !tt.want.getFromBackend && httpClientMock.called {
-					t.Errorf("Procy.handler() response from cache '%v', want '%v'", true, false)
+					t.Errorf("Proxy.handler() response from cache '%v', want '%v'", true, false)
 				}
 
 			} else {
 				if tt.want.getFromBackend && !httpClientMock.called {
-					t.Errorf("Procy.handler() response from backend '%v', want '%v'", false, true)
+					t.Errorf("Proxy.handler() response from backend '%v', want '%v'", false, true)
 				} else if !tt.want.getFromBackend && httpClientMock.called {
-					t.Errorf("Procy.handler() response from backend '%v', want '%v'", false, true)
+					t.Errorf("Proxy.handler() response from backend '%v', want '%v'", false, true)
+				}
+			}
+
+			for _, h := range tt.args.headers {
+				if !bytes.Equal(ctx.Response.Header.PeekBytes(h.Key), h.Value) {
+					t.Errorf("Proxy.handler() the header '%s = %s' not found in response", h.Key, h.Value)
 				}
 			}
 		})

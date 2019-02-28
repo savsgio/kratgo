@@ -32,6 +32,8 @@ func (hc *httpClient) reset() {
 }
 
 func (hc *httpClient) do(f fetcher) error {
+	hc.req.Header.Set(clientReqHeaderKey, clientReqHeaderValue)
+
 	return f.Do(hc.req, hc.resp)
 }
 
