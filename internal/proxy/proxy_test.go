@@ -956,6 +956,10 @@ func TestProxy_fetchFromBackend(t *testing.T) {
 				t.Errorf("Proxy.fetchFromBackend() Unexpected error: %v", err)
 			}
 
+			if v := ctx.Request.Header.Peek(proxyReqHeaderKey); string(v) != proxyReqHeaderValue {
+				t.Errorf("The header '%s = %s' not found in request", proxyReqHeaderKey, proxyReqHeaderValue)
+			}
+
 			if tt.want.err {
 				return
 			}

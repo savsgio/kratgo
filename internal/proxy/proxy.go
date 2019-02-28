@@ -187,6 +187,7 @@ func (p *Proxy) fetchFromBackend(cacheKey, path []byte, ctx *fasthttp.RequestCtx
 		p.log.Debugf("%s - %s", ctx.Method(), ctx.Path())
 	}
 
+	req.Header.Set(proxyReqHeaderKey, proxyReqHeaderValue)
 	for _, header := range hopHeaders {
 		req.Header.Del(header)
 	}

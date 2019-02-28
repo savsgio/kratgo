@@ -1,7 +1,7 @@
 package proxy
 
-const clientReqHeaderKey = "X-Kratgo-Cache"
-const clientReqHeaderValue = "true"
+const proxyReqHeaderKey = "X-Kratgo-Cache"
+const proxyReqHeaderValue = "true"
 
 const headerLocation = "Location"
 const headerContentEncoding = "Content-Encoding"
