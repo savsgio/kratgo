@@ -100,8 +100,7 @@ func Test_cloneHeaders(t *testing.T) {
 }
 
 func Test_getEvalValue(t *testing.T) {
-	req := fasthttp.AcquireRequest()
-	resp := fasthttp.AcquireResponse()
+	ctx := new(fasthttp.RequestCtx)
 
 	method := "POST"
 	host := "www.kratgo.com"
@@ -115,14 +114,15 @@ func Test_getEvalValue(t *testing.T) {
 	cookieName := "kratcookie"
 	cookieValue := "1234"
 
-	req.Header.SetMethod(method)
-	req.Header.SetHost(host)
-	req.SetRequestURI(path)
-	resp.Header.SetContentType(contentType)
-	resp.SetStatusCode(statusCode)
-	req.Header.Set(reqHeaderName, reqHeaderValue)
-	resp.Header.Set(respHeaderName, respHeaderValue)
-	req.Header.SetCookie(cookieName, cookieValue)
+	ctx.Request.SetRequestURI(path)
+	ctx.Request.Header.SetMethod(method)
+	ctx.Request.Header.SetHost(host)
+	ctx.Request.Header.Set(reqHeaderName, reqHeaderValue)
+	ctx.Request.Header.SetCookie(cookieName, cookieValue)
+
+	ctx.Response.Header.SetContentType(contentType)
+	ctx.Response.Header.Set(respHeaderName, respHeaderValue)
+	ctx.Response.SetStatusCode(statusCode)
 
 	type args struct {
 		name string
@@ -226,7 +226,7 @@ func Test_getEvalValue(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getEvalValue(req, resp, tt.args.name, tt.args.key); got != tt.want.value {
+			if got := getEvalValue(ctx, tt.args.name, tt.args.key); got != tt.want.value {
 				t.Errorf("getEvalValue() = '%v', want '%v'", got, tt.want)
 			}
 		})
@@ -316,12 +316,11 @@ func Test_checkIfNoCache(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := fasthttp.AcquireRequest()
-			resp := fasthttp.AcquireResponse()
+			ctx := new(fasthttp.RequestCtx)
 			params := acquireEvalParams()
 
-			req.Header.SetMethod(tt.args.method)
-			req.Header.SetHost(tt.args.host)
+			ctx.Request.Header.SetMethod(tt.args.method)
+			ctx.Request.Header.SetHost(tt.args.host)
 
 			if tt.args.delRuleParams {
 				for i := range p.nocacheRules {
@@ -330,7 +329,7 @@ func Test_checkIfNoCache(t *testing.T) {
 				}
 			}
 
-			noCache, err := checkIfNoCache(req, resp, p.nocacheRules, params)
+			noCache, err := checkIfNoCache(ctx, p.nocacheRules, params)
 			if (err != nil) != tt.want.err {
 				t.Errorf("Unexpected error: %v", err)
 			}
@@ -439,15 +438,14 @@ func TestHTTPClient_processHeaderRules(t *testing.T) {
 
 			params := acquireEvalParams()
 
-			req := fasthttp.AcquireRequest()
-			resp := fasthttp.AcquireResponse()
+			ctx := new(fasthttp.RequestCtx)
 
-			resp.Header.Set(unsetName1, "data")
-			resp.Header.Set("FakeHeader", "fake data")
-			resp.Header.Set("Content-Type", "text/html")
-			req.Header.Set("X-Data", "123")
+			ctx.Request.Header.Set("X-Data", "123")
+			ctx.Response.Header.Set(unsetName1, "data")
+			ctx.Response.Header.Set("FakeHeader", "fake data")
+			ctx.Response.Header.Set("Content-Type", "text/html")
 
-			err := processHeaderRules(req, resp, p.headersRules, params)
+			err := processHeaderRules(ctx, p.headersRules, params)
 			if (err != nil) != tt.want.err {
 				t.Errorf("Unexpected error: %v", err)
 			}
@@ -456,25 +454,25 @@ func TestHTTPClient_processHeaderRules(t *testing.T) {
 				return
 			}
 
-			if v := resp.Header.Peek(setName1); string(v) != setValue1 {
+			if v := ctx.Response.Header.Peek(setName1); string(v) != setValue1 {
 				t.Errorf("httpClient.processHeaderRules() not set header '%s' with value '%s', want '%s==%s'",
 					setName1, setValue1, setName1, v)
 			}
 
-			if v := resp.Header.Peek(setName2); string(v) != setValue2 {
+			if v := ctx.Response.Header.Peek(setName2); string(v) != setValue2 {
 				t.Errorf("httpClient.processHeaderRules() not set header '%s' with value '%s', want '%s==%s'",
 					setName2, setValue2, setName2, v)
 			}
 
-			if v := resp.Header.Peek(setName3); len(v) > 0 {
+			if v := ctx.Response.Header.Peek(setName3); len(v) > 0 {
 				t.Errorf("httpClient.processHeaderRules() header '%s' is setted but not fulfill the condition", setName3)
 			}
 
-			if v := resp.Header.Peek(unsetName1); len(v) > 0 {
+			if v := ctx.Response.Header.Peek(unsetName1); len(v) > 0 {
 				t.Errorf("httpClient.processHeaderRules() not unset header '%s'", unsetName1)
 			}
 
-			if v := resp.Header.Peek(unsetName2); len(v) > 0 {
+			if v := ctx.Response.Header.Peek(unsetName2); len(v) > 0 {
 				t.Errorf("httpClient.processHeaderRules() not unset header '%s'", unsetName2)
 			}
 		})

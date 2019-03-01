@@ -34,13 +34,10 @@ func New(cfg Config) (*Proxy, error) {
 	p.httpScheme = cfg.HTTPScheme
 	p.log = log
 
-	p.backends = make([]fetcher, len(p.fileConfig.BackendAddrs))
-	for i, addr := range p.fileConfig.BackendAddrs {
-		p.backends[i] = &fasthttp.HostClient{
-			Addr: addr,
-		}
+	for _, addr := range p.fileConfig.BackendAddrs {
+		p.backends = append(p.backends, &fasthttp.HostClient{Addr: addr})
 	}
-	p.totalBackends = len(p.fileConfig.BackendAddrs)
+	p.totalBackends = len(p.backends)
 
 	p.tools = sync.Pool{
 		New: func() interface{} {
@@ -162,9 +159,9 @@ func (p *Proxy) parseHeadersRules(action typeHeaderAction, headers []config.Head
 
 func (p *Proxy) saveBackendResponse(cacheKey, path []byte, resp *fasthttp.Response, entry *cache.Entry) error {
 	r := cache.AcquireResponse()
-
 	r.Path = append(r.Path, path...)
 	r.Body = append(r.Body, resp.Body()...)
+
 	resp.Header.VisitAll(func(k, v []byte) {
 		r.SetHeader(k, v)
 	})
@@ -181,22 +178,20 @@ func (p *Proxy) saveBackendResponse(cacheKey, path []byte, resp *fasthttp.Respon
 }
 
 func (p *Proxy) fetchFromBackend(cacheKey, path []byte, ctx *fasthttp.RequestCtx, pt *proxyTools) error {
-	req, resp := &ctx.Request, &ctx.Response
-
 	if p.log.DebugEnabled() {
 		p.log.Debugf("%s - %s", ctx.Method(), ctx.Path())
 	}
 
-	req.Header.Set(proxyReqHeaderKey, proxyReqHeaderValue)
+	ctx.Request.Header.Set(proxyReqHeaderKey, proxyReqHeaderValue)
 	for _, header := range hopHeaders {
-		req.Header.Del(header)
+		ctx.Request.Header.Del(header)
 	}
 
-	if err := p.getBackend().Do(req, resp); err != nil {
+	if err := p.getBackend().Do(&ctx.Request, &ctx.Response); err != nil {
 		return fmt.Errorf("Could not fetch response from backend: %v", err)
 	}
 
-	if err := processHeaderRules(req, resp, p.headersRules, pt.params); err != nil {
+	if err := processHeaderRules(ctx, p.headersRules, pt.params); err != nil {
 		return fmt.Errorf("Could not process headers rules: %v", err)
 	}
 
@@ -205,7 +200,7 @@ func (p *Proxy) fetchFromBackend(cacheKey, path []byte, ctx *fasthttp.RequestCtx
 		return nil
 	}
 
-	noCache, err := checkIfNoCache(req, resp, p.nocacheRules, pt.params)
+	noCache, err := checkIfNoCache(ctx, p.nocacheRules, pt.params)
 	if err != nil {
 		return err
 	}
@@ -223,7 +218,7 @@ func (p *Proxy) handler(ctx *fasthttp.RequestCtx) {
 	path := ctx.URI().PathOriginal()
 	cacheKey := ctx.Host()
 
-	if noCache, err := checkIfNoCache(&ctx.Request, &ctx.Response, p.nocacheRules, pt.params); err != nil {
+	if noCache, err := checkIfNoCache(ctx, p.nocacheRules, pt.params); err != nil {
 		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
 		p.log.Error(err)
 

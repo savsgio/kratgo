@@ -63,46 +63,46 @@ func cloneHeaders(dst, src *fasthttp.RequestHeader) {
 	})
 }
 
-func getEvalValue(req *fasthttp.Request, resp *fasthttp.Response, name, key string) string {
+func getEvalValue(ctx *fasthttp.RequestCtx, name, key string) string {
 	value := name
 
 	switch name {
 	case config.EvalMethodVar:
-		value = gotils.B2S(req.Header.Method())
+		value = gotils.B2S(ctx.Request.Header.Method())
 
 	case config.EvalHostVar:
-		value = gotils.B2S(req.Host())
+		value = gotils.B2S(ctx.Request.Host())
 
 	case config.EvalPathVar:
-		value = gotils.B2S(req.URI().PathOriginal())
+		value = gotils.B2S(ctx.Request.URI().PathOriginal())
 
 	case config.EvalContentTypeVar:
-		value = gotils.B2S(resp.Header.ContentType())
+		value = gotils.B2S(ctx.Response.Header.ContentType())
 
 	case config.EvalStatusCodeVar:
-		value = strconv.Itoa(resp.StatusCode())
+		value = strconv.Itoa(ctx.Response.StatusCode())
 
 	default:
 		if strings.HasPrefix(name, config.EvalReqHeaderVar) {
-			value = gotils.B2S(req.Header.Peek(key))
+			value = gotils.B2S(ctx.Request.Header.Peek(key))
 
 		} else if strings.HasPrefix(name, config.EvalRespHeaderVar) {
-			value = gotils.B2S(resp.Header.Peek(key))
+			value = gotils.B2S(ctx.Response.Header.Peek(key))
 
 		} else if strings.HasPrefix(name, config.EvalCookieVar) {
-			value = gotils.B2S(req.Header.Cookie(key))
+			value = gotils.B2S(ctx.Request.Header.Cookie(key))
 		}
 	}
 
 	return value
 }
 
-func checkIfNoCache(req *fasthttp.Request, resp *fasthttp.Response, rules []rule, params *evalParams) (bool, error) {
+func checkIfNoCache(ctx *fasthttp.RequestCtx, rules []rule, params *evalParams) (bool, error) {
 	for _, r := range rules {
 		params.reset()
 
 		for _, p := range r.params {
-			params.set(p.name, getEvalValue(req, resp, p.name, p.subKey))
+			params.set(p.name, getEvalValue(ctx, p.name, p.subKey))
 		}
 
 		result, err := r.expr.Evaluate(params.all())
@@ -118,7 +118,7 @@ func checkIfNoCache(req *fasthttp.Request, resp *fasthttp.Response, rules []rule
 	return false, nil
 }
 
-func processHeaderRules(req *fasthttp.Request, resp *fasthttp.Response, rules []headerRule, params *evalParams) error {
+func processHeaderRules(ctx *fasthttp.RequestCtx, rules []headerRule, params *evalParams) error {
 	for _, r := range rules {
 		params.reset()
 
@@ -126,7 +126,7 @@ func processHeaderRules(req *fasthttp.Request, resp *fasthttp.Response, rules []
 
 		if r.expr != nil {
 			for _, p := range r.params {
-				params.set(p.name, getEvalValue(req, resp, p.name, p.subKey))
+				params.set(p.name, getEvalValue(ctx, p.name, p.subKey))
 			}
 
 			result, err := r.expr.Evaluate(params.all())
@@ -142,9 +142,9 @@ func processHeaderRules(req *fasthttp.Request, resp *fasthttp.Response, rules []
 		}
 
 		if r.action == setHeaderAction {
-			resp.Header.Set(r.name, getEvalValue(req, resp, r.value.value, r.value.subKey))
+			ctx.Response.Header.Set(r.name, getEvalValue(ctx, r.value.value, r.value.subKey))
 		} else {
-			resp.Header.Del(r.name)
+			ctx.Response.Header.Del(r.name)
 		}
 	}
 
