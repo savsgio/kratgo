@@ -6,14 +6,14 @@ PROJECT_NAME = kratgo
 BIN_DIR = ./bin
 BIN_FILE = $(PROJECT_NAME)
 
-INTERNAL_DIR = ./internal
+MODULES_DIR = ./modules
 
-KRATGO_DIR = $(INTERNAL_DIR)/$(PROJECT_NAME)
+KRATGO_DIR = $(PROJECT_NAME)
 CMD_DIR = ./cmd
 CONFIG_DIR = ./config/
 
 # Get version constant
-VERSION := $(shell cat $(KRATGO_DIR)/const.go | grep "const Version = " | awk '{print $$NF}' | sed -e 's/^.//' -e 's/.$$//')
+VERSION := $(shell cat $(KRATGO_DIR)/const.go | grep "const version = " | awk '{print $$NF}' | sed -e 's/^.//' -e 's/.$$//')
 BUILD := $(shell git rev-parse HEAD)
 
 # Use linker flags to provide version/build settings to the binary
@@ -39,7 +39,7 @@ test:
 	go test -v -race -cover ./...
 
 bench:
-	go test -cpuprofile=cpu.prof -bench=. -benchmem $(INTERNAL_DIR)/proxy
+	go test -cpuprofile=cpu.prof -bench=. -benchmem $(MODULES_DIR)/proxy
 
 run: build
 	$(BIN_DIR)/$(BIN_FILE) -config ./config/kratgo-dev.conf.yml

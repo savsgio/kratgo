@@ -1,7 +1,7 @@
 package admin
 
 import (
-	"github.com/savsgio/kratgo/internal/invalidator"
+	"github.com/savsgio/kratgo/modules/invalidator"
 
 	json "github.com/json-iterator/go"
 	"github.com/savsgio/atreugo/v7"

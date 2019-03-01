@@ -3,7 +3,7 @@ package invalidator
 import (
 	"fmt"
 
-	"github.com/savsgio/kratgo/internal/cache"
+	"github.com/savsgio/kratgo/modules/cache"
 
 	"github.com/allegro/bigcache"
 	"github.com/savsgio/gotils"

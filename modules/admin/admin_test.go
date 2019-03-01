@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/savsgio/kratgo/internal/cache"
-	"github.com/savsgio/kratgo/internal/config"
-	"github.com/savsgio/kratgo/internal/invalidator"
+	"github.com/savsgio/kratgo/modules/cache"
+	"github.com/savsgio/kratgo/modules/config"
+	"github.com/savsgio/kratgo/modules/invalidator"
 
 	"github.com/savsgio/atreugo/v7"
 	logger "github.com/savsgio/go-logger"

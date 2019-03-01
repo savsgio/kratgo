@@ -3,7 +3,7 @@ package invalidator
 import (
 	"testing"
 
-	"github.com/savsgio/kratgo/internal/cache"
+	"github.com/savsgio/kratgo/modules/cache"
 )
 
 func TestInvalidator_invalidateByHost(t *testing.T) {

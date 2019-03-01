@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/savsgio/kratgo/internal/config"
+	"github.com/savsgio/kratgo/modules/config"
 
 	logger "github.com/savsgio/go-logger"
 )

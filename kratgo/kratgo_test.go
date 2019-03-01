@@ -6,7 +6,7 @@ import (
 	"time"
 
 	logger "github.com/savsgio/go-logger"
-	"github.com/savsgio/kratgo/internal/config"
+	"github.com/savsgio/kratgo/modules/config"
 )
 
 type mockServer struct {

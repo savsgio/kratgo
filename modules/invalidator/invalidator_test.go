@@ -6,9 +6,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/savsgio/kratgo/modules/cache"
+	"github.com/savsgio/kratgo/modules/config"
+
 	logger "github.com/savsgio/go-logger"
-	"github.com/savsgio/kratgo/internal/cache"
-	"github.com/savsgio/kratgo/internal/config"
 )
 
 var testCache *cache.Cache

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/savsgio/kratgo/internal/config"
+	"github.com/savsgio/kratgo/modules/config"
 
 	"github.com/savsgio/gotils"
 	"github.com/valyala/fasthttp"

@@ -6,8 +6,8 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/savsgio/kratgo/internal/config"
-	"github.com/savsgio/kratgo/internal/kratgo"
+	"github.com/savsgio/kratgo/kratgo"
+	"github.com/savsgio/kratgo/modules/config"
 )
 
 var configFilePath string

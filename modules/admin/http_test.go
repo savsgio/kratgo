@@ -3,7 +3,7 @@ package admin
 import (
 	"testing"
 
-	"github.com/savsgio/kratgo/internal/invalidator"
+	"github.com/savsgio/kratgo/modules/invalidator"
 
 	"github.com/savsgio/atreugo/v7"
 	"github.com/valyala/fasthttp"

@@ -1,11 +1,11 @@
 package kratgo
 
 import (
-	"github.com/savsgio/kratgo/internal/admin"
-	"github.com/savsgio/kratgo/internal/cache"
-	"github.com/savsgio/kratgo/internal/config"
-	"github.com/savsgio/kratgo/internal/invalidator"
-	"github.com/savsgio/kratgo/internal/proxy"
+	"github.com/savsgio/kratgo/modules/admin"
+	"github.com/savsgio/kratgo/modules/cache"
+	"github.com/savsgio/kratgo/modules/config"
+	"github.com/savsgio/kratgo/modules/invalidator"
+	"github.com/savsgio/kratgo/modules/proxy"
 )
 
 // New ...
