@@ -2,8 +2,9 @@ github.com/allegro/bigcache v1.2.0 h1:qDaE0QoF29wKBb3+pXFrJFy1ihe5OT9OiXhg1t85Sx
 github.com/allegro/bigcache v1.2.0/go.mod h1:Cb/ax3seSYIx7SuZdm2G2xzfwmv3TPSk2ucNfQESPXM=
 github.com/fasthttp/router v0.3.3 h1:pbXxvJqqb4PeNIIS//DwOtimK9hYchl33eoVgeIMNM8=
 github.com/fasthttp/router v0.3.3/go.mod h1:lCf2TfRIzs3lgcFUGQah09Wu5BiEHcBPl3vm9QiXNTo=
-github.com/json-iterator/go v1.1.5 h1:gL2yXlmiIo4+t+y32d4WGwOjKGYcGOuyrg46vadswDE=
 github.com/json-iterator/go v1.1.5/go.mod h1:+SdeFBvtyEkXs7REEP0seUULqWtbJapLOCVDaaPEHmU=
+github.com/json-iterator/go v1.1.6 h1:MrUvLMLTMxbqFJ9kzlvat/rYZqZnW3u4wkLzWTaFwKs=
+github.com/json-iterator/go v1.1.6/go.mod h1:+SdeFBvtyEkXs7REEP0seUULqWtbJapLOCVDaaPEHmU=
 github.com/klauspost/compress v1.4.0 h1:8nsMz3tWa9SWWPL60G1V6CUsf4lLjWLTNEtibhe8gh8=
 github.com/klauspost/compress v1.4.0/go.mod h1:RyIbtBH6LamlWaDj8nUwkbUhJ87Yi3uG0guNDohfE1A=
 github.com/klauspost/cpuid v0.0.0-20180405133222-e7e905edc00e h1:+lIPJOWl+jSiJOc70QXJ07+2eg2Jy2EC7Mi11BWujeM=
@@ -18,8 +19,9 @@ github.com/savsgio/atreugo/v7 v7.1.1 h1:SJBMyKS0ZHo3d4i1en0hvYdK+e8hyknPlVXlx9Go
 github.com/savsgio/atreugo/v7 v7.1.1/go.mod h1:V07FVzh/wHX/3ODPkicj6KcuVM+7/IUEwyYu5tl2dsc=
 github.com/savsgio/go-logger v1.0.0 h1:jiaRvohRr8RwtcK/WDcA/Yp4eaPaarAko3JNPzt1xoQ=
 github.com/savsgio/go-logger v1.0.0/go.mod h1:/ZzTTmB3JJqjZQcLlxTGbwy3fIsLUoYyldsSEL5rU2g=
-github.com/savsgio/gotils v0.0.0-20190210195551-a1aee1d83e72 h1:JEOaM8cQH5Z237uAdMAF6YXMcZXtaiTD2NECYwrYHl0=
 github.com/savsgio/gotils v0.0.0-20190210195551-a1aee1d83e72/go.mod h1:w803/Fg1m0hrp1ZT9KNfQe4E4+WOMMFLcgzPvOcye10=
+github.com/savsgio/gotils v0.0.0-20190319131616-7f84229460a5 h1:AAJqXeX6YbYiwWZb5Hvgq5mwCmEnmRSdr7An/GS9P00=
+github.com/savsgio/gotils v0.0.0-20190319131616-7f84229460a5/go.mod h1:w803/Fg1m0hrp1ZT9KNfQe4E4+WOMMFLcgzPvOcye10=
 github.com/savsgio/govaluate/v3 v3.0.0 h1:nilYfq6DyMQvy/++E42NW+s56k0I5jgqjm5IRtrwRfc=
 github.com/savsgio/govaluate/v3 v3.0.0/go.mod h1:4hnQJKZBjiFt7RfuNjx5tmXs1yL6BhtP5j4OmZHm4C0=
 github.com/tinylib/msgp v1.1.0 h1:9fQd+ICuRIu/ue4vxJZu6/LzxN0HwMds2nq/0cFvxHU=
