@@ -4,7 +4,7 @@ import (
 	"github.com/savsgio/kratgo/modules/invalidator"
 
 	json "github.com/json-iterator/go"
-	"github.com/savsgio/atreugo/v7"
+	"github.com/savsgio/atreugo/v8"
 )
 
 func (a *Admin) invalidateView(ctx *atreugo.RequestCtx) error {

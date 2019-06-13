@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/savsgio/atreugo/v7"
+	"github.com/savsgio/atreugo/v8"
 	logger "github.com/savsgio/go-logger"
 )
 
