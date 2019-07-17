@@ -85,7 +85,7 @@ Get a basic configuration from [here](https://github.com/savsgio/kratgo/blob/mas
 Run with:
 
 ```bash
-docker run --rm --name kratgo -it -v <VOLUME WIHT CONFIG> -p 6081:6081 -p 6082:6082 savsgio/kratgo -config <CONFIG FILE PATH IN THE VOLUME>
+docker run --rm --name kratgo -it -v <VOLUME WITH CONFIG> -p 6081:6081 -p 6082:6082 savsgio/kratgo -config <CONFIG FILE PATH IN THE VOLUME>
 ```
 
 ## Developers
