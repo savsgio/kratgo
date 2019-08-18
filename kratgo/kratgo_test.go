@@ -205,10 +205,3 @@ func TestKratgo_ListenAndServe(t *testing.T) {
 		t.Error("Kratgo.ListenAndServe() admin server is not listening")
 	}
 }
-
-func TestKratgo_Version(t *testing.T) {
-	v := Version()
-	if v != version {
-		t.Errorf("Kratgo.Version() == '%s', want '%s'", v, version)
-	}
-}

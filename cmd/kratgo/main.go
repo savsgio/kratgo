@@ -10,7 +10,7 @@ import (
 	"github.com/savsgio/kratgo/modules/config"
 )
 
-var configFilePath string
+var version, build, configFilePath string
 
 func init() {
 	var showVersion bool
@@ -21,7 +21,9 @@ func init() {
 	flag.Parse()
 
 	if showVersion {
-		fmt.Printf("Kratgo version: %s\n", kratgo.Version())
+		fmt.Println("Kratgo:")
+		fmt.Printf("  Version: %s\n", version)
+		fmt.Printf("  Build: %s\n\n", build)
 		fmt.Printf("Go version: %s\n", runtime.Version())
 		os.Exit(0)
 	}

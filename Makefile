@@ -13,11 +13,11 @@ CMD_DIR = ./cmd
 CONFIG_DIR = ./config/
 
 # Get version constant
-VERSION := $(shell cat $(KRATGO_DIR)/const.go | grep "const version = " | awk '{print $$NF}' | sed -e 's/^.//' -e 's/.$$//')
+VERSION := 1.1.0
 BUILD := $(shell git rev-parse HEAD)
 
 # Use linker flags to provide version/build settings to the binary
-LDFLAGS=-ldflags "-s -w -X=main.Version=$(VERSION) -X=main.Build=$(BUILD)"
+LDFLAGS=-ldflags "-s -w -X=main.version=$(VERSION) -X=main.build=$(BUILD)"
 
 
 default: get build
