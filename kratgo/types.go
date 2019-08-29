@@ -6,20 +6,15 @@ import (
 
 // Kratgo ...
 type Kratgo struct {
-	Proxy ProxyServer
-	Admin AdminServer
+	Proxy Server
+	Admin Server
 
 	logFile *os.File
 }
 
 // ###### INTERFACES ######
 
-// ProxyServer ...
-type ProxyServer interface {
-	ListenAndServe() error
-}
-
-// AdminServer ...
-type AdminServer interface {
+// Server ...
+type Server interface {
 	ListenAndServe() error
 }

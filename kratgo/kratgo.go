@@ -27,17 +27,15 @@ func New(cfg config.Config) (*Kratgo, error) {
 		return nil, err
 	}
 
-	p, err := proxy.New(proxy.Config{
+	if k.Proxy, err = proxy.New(proxy.Config{
 		FileConfig: cfg.Proxy,
 		Cache:      c,
 		HTTPScheme: defaultHTTPScheme,
 		LogLevel:   cfg.LogLevel,
 		LogOutput:  logFile,
-	})
-	if err != nil {
+	}); err != nil {
 		return nil, err
 	}
-	k.Proxy = p
 
 	i, err := invalidator.New(invalidator.Config{
 		FileConfig: cfg.Invalidator,
@@ -49,18 +47,16 @@ func New(cfg config.Config) (*Kratgo, error) {
 		return nil, err
 	}
 
-	a, err := admin.New(admin.Config{
+	if k.Admin, err = admin.New(admin.Config{
 		FileConfig:  cfg.Admin,
 		Cache:       c,
 		Invalidator: i,
 		HTTPScheme:  defaultHTTPScheme,
 		LogLevel:    cfg.LogLevel,
 		LogOutput:   logFile,
-	})
-	if err != nil {
+	}); err != nil {
 		return nil, err
 	}
-	k.Admin = a
 
 	return k, nil
 }

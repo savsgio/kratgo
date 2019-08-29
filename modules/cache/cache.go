@@ -6,7 +6,7 @@ import (
 
 	"github.com/savsgio/kratgo/modules/config"
 
-	"github.com/allegro/bigcache"
+	"github.com/allegro/bigcache/v2"
 	logger "github.com/savsgio/go-logger"
 	"github.com/savsgio/gotils"
 )

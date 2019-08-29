@@ -5,7 +5,7 @@ import (
 
 	"github.com/savsgio/kratgo/modules/cache"
 
-	"github.com/allegro/bigcache"
+	"github.com/allegro/bigcache/v2"
 	"github.com/savsgio/gotils"
 )
 
