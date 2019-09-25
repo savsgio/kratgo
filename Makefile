@@ -24,7 +24,7 @@ default: get build
 
 get:
 	@echo "[*] Downloading dependencies..."
-	go get
+	cd $(CMD_DIR)/kratgo && go get
 	@echo "[*] Finish..."
 
 vendor:

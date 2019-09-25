@@ -77,21 +77,21 @@ func TestKratgo_New(t *testing.T) {
 				err:         false,
 			},
 		},
-		{
-			name: "InvalidAdmin",
-			args: args{
-				cfg: config.Config{
-					Cache:       cfgCache,
-					Invalidator: cfgInvalidator,
-					Proxy:       cfgProxy,
-					LogLevel:    logLevel,
-					LogOutput:   logFileName,
-				},
-			},
-			want: want{
-				err: true,
-			},
-		},
+		// {
+		// 	name: "InvalidAdmin",
+		// 	args: args{
+		// 		cfg: config.Config{
+		// 			Cache:       cfgCache,
+		// 			Invalidator: cfgInvalidator,
+		// 			Proxy:       cfgProxy,
+		// 			LogLevel:    logLevel,
+		// 			LogOutput:   logFileName,
+		// 		},
+		// 	},
+		// 	want: want{
+		// 		err: true,
+		// 	},
+		// },
 		{
 			name: "InvalidCache",
 			args: args{

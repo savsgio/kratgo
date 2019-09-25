@@ -1,11 +1,7 @@
 package admin
 
 import (
-	"fmt"
-	"strconv"
-	"strings"
-
-	"github.com/savsgio/atreugo/v8"
+	"github.com/savsgio/atreugo/v9"
 	logger "github.com/savsgio/go-logger"
 )
 
@@ -15,28 +11,15 @@ func New(cfg Config) (*Admin, error) {
 	a.fileConfig = cfg.FileConfig
 
 	logName := "kratgo-admin"
-
 	log := logger.New(logName, cfg.LogLevel, cfg.LogOutput)
 
-	addr := strings.Split(cfg.FileConfig.Addr, ":")
-	if len(addr) < 2 {
-		return nil, fmt.Errorf("Invalid address '%s'", cfg.FileConfig.Addr)
-	}
-
-	port, err := strconv.Atoi(addr[1])
-	if err != nil {
-		return nil, fmt.Errorf("Invalid port '%s'", cfg.FileConfig.Addr)
-	}
-
 	a.server = atreugo.New(&atreugo.Config{
-		Host:    addr[0],
-		Port:    port,
+		Addr:    cfg.FileConfig.Addr,
 		LogName: logName,
 	})
 	a.server.SetLogOutput(cfg.LogOutput)
 
 	a.httpScheme = cfg.HTTPScheme
-
 	a.cache = cfg.Cache
 	a.invalidator = cfg.Invalidator
 	a.log = log

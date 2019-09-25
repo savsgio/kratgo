@@ -12,7 +12,7 @@ import (
 	"github.com/savsgio/kratgo/modules/config"
 	"github.com/savsgio/kratgo/modules/invalidator"
 
-	"github.com/savsgio/atreugo/v8"
+	"github.com/savsgio/atreugo/v9"
 	logger "github.com/savsgio/go-logger"
 )
 
@@ -164,42 +164,6 @@ func TestAdmin_New(t *testing.T) {
 			},
 			want: want{
 				err: false,
-			},
-		},
-		{
-			name: "InvalidAddress",
-			args: args{
-				cfg: Config{
-					FileConfig: config.Admin{
-						Addr: "localhost",
-					},
-					Cache:       testCache,
-					Invalidator: invalidatorMock,
-					HTTPScheme:  httpScheme,
-					LogLevel:    logLevel,
-					LogOutput:   logOutput,
-				},
-			},
-			want: want{
-				err: true,
-			},
-		},
-		{
-			name: "InvalidPort",
-			args: args{
-				cfg: Config{
-					FileConfig: config.Admin{
-						Addr: "localhost:",
-					},
-					Cache:       testCache,
-					Invalidator: invalidatorMock,
-					HTTPScheme:  httpScheme,
-					LogLevel:    logLevel,
-					LogOutput:   logOutput,
-				},
-			},
-			want: want{
-				err: true,
 			},
 		},
 	}
