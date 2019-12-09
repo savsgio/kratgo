@@ -5,7 +5,7 @@ import (
 
 	"github.com/savsgio/kratgo/modules/invalidator"
 
-	"github.com/savsgio/atreugo/v9"
+	"github.com/savsgio/atreugo/v10"
 	"github.com/valyala/fasthttp"
 )
 
