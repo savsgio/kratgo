@@ -44,12 +44,12 @@ func Test_bigcacheConfig(t *testing.T) {
 		t.Errorf("bigcacheConfig() Shards == '%d', want '%d'", bcConfig.Shards, defaultBigcacheShards)
 	}
 
-	lifeWindoow := cfg.TTL * time.Minute
+	lifeWindoow := time.Duration(cfg.TTL) * time.Minute
 	if bcConfig.LifeWindow != lifeWindoow {
 		t.Errorf("bigcacheConfig() LifeWindow == '%d', want '%d'", bcConfig.LifeWindow, lifeWindoow)
 	}
 
-	cleanWindow := cfg.CleanFrequency * time.Minute
+	cleanWindow := time.Duration(cfg.CleanFrequency) * time.Minute
 	if bcConfig.CleanWindow != cleanWindow {
 		t.Errorf("bigcacheConfig() CleanWindow == '%d', want '%d'", bcConfig.CleanWindow, cleanWindow)
 	}

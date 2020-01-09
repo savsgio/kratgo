@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"regexp"
 	"testing"
-	"time"
 )
 
 var yamlConfig = []byte(`logLevel: debug
@@ -124,12 +123,12 @@ func TestParse(t *testing.T) {
 				t.Fatalf("Parse() LogOutput == '%s', want '%s'", cfg.LogOutput, logOutput)
 			}
 
-			cacheTTL := time.Duration(10)
+			cacheTTL := 10
 			if cfg.Cache.TTL != cacheTTL {
 				t.Fatalf("Parse() Cache.TTL == '%d', want '%d'", cfg.Cache.TTL, cacheTTL)
 			}
 
-			cacheCleanFrequency := time.Duration(1)
+			cacheCleanFrequency := 1
 			if cfg.Cache.CleanFrequency != cacheCleanFrequency {
 				t.Fatalf("Parse() Cache.CleanFrequency == '%d', want '%d'", cfg.Cache.CleanFrequency, cacheCleanFrequency)
 			}

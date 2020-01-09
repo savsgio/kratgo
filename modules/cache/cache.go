@@ -14,8 +14,8 @@ import (
 func bigcacheConfig(cfg config.Cache) bigcache.Config {
 	return bigcache.Config{
 		Shards:             defaultBigcacheShards,
-		LifeWindow:         cfg.TTL * time.Minute,
-		CleanWindow:        cfg.CleanFrequency * time.Minute,
+		LifeWindow:         time.Duration(cfg.TTL) * time.Minute,
+		CleanWindow:        time.Duration(cfg.CleanFrequency) * time.Minute,
 		MaxEntriesInWindow: cfg.MaxEntries,
 		MaxEntrySize:       cfg.MaxEntrySize,
 		Verbose:            false,

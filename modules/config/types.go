@@ -1,7 +1,5 @@
 package config
 
-import "time"
-
 // Config ...
 type Config struct {
 	Cache       Cache       `yaml:"cache"`
@@ -41,11 +39,11 @@ type Header struct {
 
 // Cache ...
 type Cache struct {
-	TTL              time.Duration `yaml:"ttl"`
-	CleanFrequency   time.Duration `yaml:"cleanFrequency"`
-	MaxEntries       int           `yaml:"maxEntries"`
-	MaxEntrySize     int           `yaml:"maxEntrySize"`
-	HardMaxCacheSize int           `yaml:"hardMaxCacheSize"`
+	TTL              int `yaml:"ttl"`
+	CleanFrequency   int `yaml:"cleanFrequency"`
+	MaxEntries       int `yaml:"maxEntries"`
+	MaxEntrySize     int `yaml:"maxEntrySize"`
+	HardMaxCacheSize int `yaml:"hardMaxCacheSize"`
 }
 
 // Invalidator ...
