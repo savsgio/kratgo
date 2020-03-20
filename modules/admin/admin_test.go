@@ -56,12 +56,14 @@ func (mock *mockServer) ListenAndServe() error {
 	return nil
 }
 
-func (mock *mockServer) Path(httpMethod string, url string, viewFn atreugo.View) {
+func (mock *mockServer) Path(httpMethod string, url string, viewFn atreugo.View) *atreugo.Path {
 	mock.paths = append(mock.paths, mockPath{
 		method: httpMethod,
 		url:    url,
 		view:   viewFn,
 	})
+
+	return nil
 }
 
 func (mock *mockServer) SetLogOutput(output io.Writer) {

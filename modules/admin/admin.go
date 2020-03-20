@@ -13,7 +13,7 @@ func New(cfg Config) (*Admin, error) {
 	logName := "kratgo-admin"
 	log := logger.New(logName, cfg.LogLevel, cfg.LogOutput)
 
-	a.server = atreugo.New(&atreugo.Config{
+	a.server = atreugo.New(atreugo.Config{
 		Addr:    cfg.FileConfig.Addr,
 		LogName: logName,
 	})

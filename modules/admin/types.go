@@ -47,6 +47,6 @@ type Invalidator interface {
 // Server ...
 type Server interface {
 	ListenAndServe() error
-	Path(httpMethod string, url string, viewFn atreugo.View)
+	Path(httpMethod string, url string, viewFn atreugo.View) *atreugo.Path
 	SetLogOutput(output io.Writer)
 }
