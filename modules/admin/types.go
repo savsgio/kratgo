@@ -7,7 +7,7 @@ import (
 	"github.com/savsgio/kratgo/modules/config"
 	"github.com/savsgio/kratgo/modules/invalidator"
 
-	"github.com/savsgio/atreugo/v10"
+	"github.com/savsgio/atreugo/v11"
 	logger "github.com/savsgio/go-logger"
 )
 
