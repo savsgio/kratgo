@@ -2,10 +2,9 @@ github.com/allegro/bigcache/v2 v2.2.0 h1:rB+Vjrjp7OijGRFMeUpJYXjsn3lN6ooIvomEBKX
 github.com/allegro/bigcache/v2 v2.2.0/go.mod h1:FppZsIO+IZk7gCuj5FiIDHGygD9xvWQcqg1uIPMb6tY=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/fasthttp/router v1.0.1 h1:OEc/ITEJ7CQbQZ4UTPwQynBka/kmL/lrQsc2chKbHRo=
-github.com/fasthttp/router v1.0.1/go.mod h1:ZVa4I0mMb6i+hPjW90TE5DzFpIv03w8eAo6dlExRE7U=
+github.com/fasthttp/router v1.0.2 h1:rdYdcAmwOLqWuFgc4afa409SYmuw4t0A66K5Ib+GT3I=
+github.com/fasthttp/router v1.0.2/go.mod h1:Myk/ofrwtfiLSCIfbE44+e+PyP3mR6JhZg3AYzqwJI0=
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
-github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/json-iterator/go v1.1.9 h1:9yzud/Ht36ygwatGx56VwCZtlI/2AD15T1X2sjSuGns=
 github.com/json-iterator/go v1.1.9/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
 github.com/klauspost/compress v1.8.2 h1:Bx0qjetmNjdFXASH02NSAREKpiaDwkO1DRZ3dV2KCcs=
@@ -19,8 +18,8 @@ github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742/go.mod h1:bx2lN
 github.com/philhofer/fwd v1.0.0 h1:UbZqGr5Y38ApvM/V/jEljVxwocdweyH+vmYvRPBnbqQ=
 github.com/philhofer/fwd v1.0.0/go.mod h1:gk3iGcWd9+svBvR0sR+KPcfE+RNWozjowpeBVG3ZVNU=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/savsgio/atreugo/v11 v11.0.1 h1:UUuwGkpg9MnReJmSQ9vJDbag46rr0R3rHx3nf/gkCoQ=
-github.com/savsgio/atreugo/v11 v11.0.1/go.mod h1:tGTvm8mY4qloEy9DlKebOSi3iTVID6V5DroWIy5uYmE=
+github.com/savsgio/atreugo/v11 v11.0.2 h1:iskitU/v7pp1YM7NxILbAZ6RK3jny+eurawMJlnLHMs=
+github.com/savsgio/atreugo/v11 v11.0.2/go.mod h1:ee/J8A7AW07WTRpf89mg9opr6dk+WZO9hGmvlbOpGag=
 github.com/savsgio/go-logger v1.0.0 h1:jiaRvohRr8RwtcK/WDcA/Yp4eaPaarAko3JNPzt1xoQ=
 github.com/savsgio/go-logger v1.0.0/go.mod h1:/ZzTTmB3JJqjZQcLlxTGbwy3fIsLUoYyldsSEL5rU2g=
 github.com/savsgio/gotils v0.0.0-20200319105752-a9cc718f6a3f h1:XfUnevLK4O22at3R77FlyQHKwlQs75LELdsH2wRX2KQ=
