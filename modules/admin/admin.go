@@ -2,7 +2,7 @@ package admin
 
 import (
 	"github.com/savsgio/atreugo/v11"
-	logger "github.com/savsgio/go-logger"
+	logger "github.com/savsgio/go-logger/v2"
 )
 
 // New ...
