@@ -1,44 +1,35 @@
 language: go
-sudo: false
-go:
-  - 1.11.x
-  - 1.12.x
-  - 1.13.x
-  - 1.14.x
-  - tip
-
-# env:
-#   - GO111MODULE=on
 
 os:
   - linux
   - osx
 
-before_install:
-  - go get -u -v golang.org/x/tools/cmd/cover
-  - go get -u -v github.com/modocache/gover
+go:
+  - 1.14.x
+  - 1.13.x
+  - 1.12.x
+  - 1.11.x
+  - tip
+
+before_script:
   - go get -u -v github.com/mattn/goveralls
-  - go get -v ./cmd/...
+  - go get -t -v ./...
 
 script:
-  # build test for supported platforms
-  - GOOS=linux go build -o /dev/null ./cmd/...
-  - GOOS=darwin go build -o /dev/null ./cmd/...
-  - GOOS=freebsd go build -o /dev/null ./cmd/...
-  - GOOS=windows go build -o /dev/null ./cmd/...
-  - |
-    if [[ $(uname) == Darwin ]]; then
-      # Last supported version for GOOS=386 is go1.14 in Darwin
-      if [[ $(go version | awk '{print $3}') =~ ^go1\.(9|10|11|12|13|14)$ ]]; then
-          GOARCH=386 go build -o /dev/null ./cmd/...
-      fi
-    else
-        GOARCH=386 go build -o /dev/null ./cmd/...
-    fi
+  - go test -v -cover -race ./... -coverprofile=.coverprofile
 
-  # run tests with the race detector
-  - go test -v -cover -race -coverprofile=all.coverprofile ./...
+  # send coverage
+  - $HOME/gopath/bin/goveralls -coverprofile=.coverprofile -service=travis-ci
 
-  # run tests
-  - $HOME/gopath/bin/gover
-  - $HOME/gopath/bin/goveralls -coverprofile=gover.coverprofile -service travis-ci
+jobs:
+  allow_failures:
+    - go: tip
+
+  include:
+    - stage: cross compilation
+      script:
+        - GOOS=linux go build -o /dev/null ./cmd/...
+        - GOOS=darwin go build -o /dev/null ./cmd/...
+        - GOOS=freebsd go build -o /dev/null ./cmd/...
+        - GOOS=windows go build -o /dev/null ./cmd/...
+        - GOARCH=386 go build -o /dev/null ./cmd/...
