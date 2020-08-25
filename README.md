@@ -12,7 +12,7 @@ Simple, lightweight and ultra-fast HTTP Cache to speed up your websites.
 
 ### Requirements
 
-- [Go](https://golang.org/dl/) >= 1.11.X
+- [Go](https://golang.org/dl/) >= 1.12.X
 - make
 - git
 

@@ -1,6 +1,6 @@
 module github.com/savsgio/kratgo
 
-go 1.11
+go 1.12
 
 require (
 	github.com/allegro/bigcache/v2 v2.2.3
