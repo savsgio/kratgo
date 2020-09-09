@@ -3,9 +3,9 @@ module github.com/savsgio/kratgo
 go 1.12
 
 require (
-	github.com/allegro/bigcache/v2 v2.2.3
+	github.com/allegro/bigcache/v2 v2.2.4
 	github.com/philhofer/fwd v1.0.0 // indirect
-	github.com/savsgio/atreugo/v11 v11.5.1
+	github.com/savsgio/atreugo/v11 v11.5.2
 	github.com/savsgio/go-logger/v2 v2.0.1
 	github.com/savsgio/gotils v0.0.0-20200616100644-13ff1fd2c28c
 	github.com/savsgio/govaluate/v3 v3.0.0
