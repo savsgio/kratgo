@@ -14,10 +14,9 @@ func New(cfg Config) (*Admin, error) {
 	log := logger.New(logName, cfg.LogLevel, cfg.LogOutput)
 
 	a.server = atreugo.New(atreugo.Config{
-		Addr:    cfg.FileConfig.Addr,
-		LogName: logName,
+		Addr:   cfg.FileConfig.Addr,
+		Logger: log,
 	})
-	a.server.SetLogOutput(cfg.LogOutput)
 
 	a.httpScheme = cfg.HTTPScheme
 	a.cache = cfg.Cache

@@ -3,9 +3,8 @@ package admin
 import (
 	"encoding/json"
 
-	"github.com/savsgio/kratgo/modules/invalidator"
-
 	"github.com/savsgio/atreugo/v11"
+	"github.com/savsgio/kratgo/modules/invalidator"
 )
 
 func (a *Admin) invalidateView(ctx *atreugo.RequestCtx) error {

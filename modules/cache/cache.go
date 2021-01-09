@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/savsgio/kratgo/modules/config"
-
 	"github.com/allegro/bigcache/v2"
 	logger "github.com/savsgio/go-logger/v2"
-	"github.com/savsgio/gotils"
+	"github.com/savsgio/gotils/strconv"
+	"github.com/savsgio/kratgo/modules/config"
 )
 
 func bigcacheConfig(cfg config.Cache) bigcache.Config {
@@ -52,7 +51,7 @@ func (c *Cache) Set(key string, entry Entry) error {
 
 // SetBytes ...
 func (c *Cache) SetBytes(key []byte, entry Entry) error {
-	return c.Set(gotils.B2S(key), entry)
+	return c.Set(strconv.B2S(key), entry)
 }
 
 // Get ...
@@ -69,7 +68,7 @@ func (c *Cache) Get(key string, dst *Entry) error {
 
 // GetBytes ...
 func (c *Cache) GetBytes(key []byte, dst *Entry) error {
-	return c.Get(gotils.B2S(key), dst)
+	return c.Get(strconv.B2S(key), dst)
 }
 
 // Del ...
@@ -79,7 +78,7 @@ func (c *Cache) Del(key string) error {
 
 // DelBytes ...
 func (c *Cache) DelBytes(key []byte) error {
-	return c.Del(gotils.B2S(key))
+	return c.Del(strconv.B2S(key))
 }
 
 // Iterator ...

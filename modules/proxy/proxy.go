@@ -5,11 +5,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/savsgio/kratgo/modules/cache"
-	"github.com/savsgio/kratgo/modules/config"
-
 	logger "github.com/savsgio/go-logger/v2"
 	"github.com/savsgio/govaluate/v3"
+	"github.com/savsgio/kratgo/modules/cache"
+	"github.com/savsgio/kratgo/modules/config"
 	"github.com/valyala/fasthttp"
 )
 

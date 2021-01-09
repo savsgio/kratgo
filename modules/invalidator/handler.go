@@ -3,10 +3,9 @@ package invalidator
 import (
 	"fmt"
 
-	"github.com/savsgio/kratgo/modules/cache"
-
 	"github.com/allegro/bigcache/v2"
-	"github.com/savsgio/gotils"
+	"github.com/savsgio/gotils/strconv"
+	"github.com/savsgio/kratgo/modules/cache"
 )
 
 func (i *Invalidator) deleteCacheKey(cacheKey string) error {
@@ -26,7 +25,7 @@ func (i *Invalidator) invalidateByHost(cacheKey string) error {
 }
 
 func (i *Invalidator) invalidateByPath(cacheKey string, cacheEntry cache.Entry, e Entry) error {
-	path := gotils.S2B(e.Path)
+	path := strconv.S2B(e.Path)
 
 	if !cacheEntry.HasResponse(path) {
 		return nil
@@ -54,7 +53,7 @@ func (i *Invalidator) invalidateByHeader(cacheKey string, cacheEntry cache.Entry
 	responses := cacheEntry.GetAllResponses()
 
 	for _, resp := range responses {
-		if !resp.HasHeader(gotils.S2B(e.Header.Key), gotils.S2B(e.Header.Value)) {
+		if !resp.HasHeader(strconv.S2B(e.Header.Key), strconv.S2B(e.Header.Value)) {
 			continue
 		}
 
@@ -78,14 +77,14 @@ func (i *Invalidator) invalidateByHeader(cacheKey string, cacheEntry cache.Entry
 }
 
 func (i *Invalidator) invalidateByPathHeader(cacheKey string, cacheEntry cache.Entry, e Entry) error {
-	path := gotils.S2B(e.Path)
+	path := strconv.S2B(e.Path)
 
 	resp := cacheEntry.GetResponse(path)
 	if resp == nil {
 		return nil
 	}
 
-	if !resp.HasHeader(gotils.S2B(e.Header.Key), gotils.S2B(e.Header.Value)) {
+	if !resp.HasHeader(strconv.S2B(e.Header.Key), strconv.S2B(e.Header.Value)) {
 		return nil
 	}
 

@@ -3,9 +3,8 @@ package cache
 import (
 	"io"
 
-	"github.com/savsgio/kratgo/modules/config"
-
 	"github.com/allegro/bigcache/v2"
+	"github.com/savsgio/kratgo/modules/config"
 )
 
 // Config ...

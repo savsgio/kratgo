@@ -5,9 +5,8 @@ import (
 	"strconv"
 	"strings"
 
+	gstrconv "github.com/savsgio/gotils/strconv"
 	"github.com/savsgio/kratgo/modules/config"
-
-	"github.com/savsgio/gotils"
 	"github.com/valyala/fasthttp"
 )
 
@@ -56,8 +55,8 @@ func stringSliceInclude(vs []string, t string) bool {
 
 func cloneHeaders(dst, src *fasthttp.RequestHeader) {
 	src.VisitAll(func(key, value []byte) {
-		if !stringSliceInclude(hopHeaders, gotils.B2S(key)) {
-			// fmt.Println(gotils.B2S(key), gotils.B2S(value))
+		if !stringSliceInclude(hopHeaders, gstrconv.B2S(key)) {
+			// fmt.Println(gstrconv.B2S(key), gstrconv.B2S(value))
 			dst.SetCanonical(key, value)
 		}
 	})
@@ -68,29 +67,29 @@ func getEvalValue(ctx *fasthttp.RequestCtx, name, key string) string {
 
 	switch name {
 	case config.EvalMethodVar:
-		value = gotils.B2S(ctx.Request.Header.Method())
+		value = gstrconv.B2S(ctx.Request.Header.Method())
 
 	case config.EvalHostVar:
-		value = gotils.B2S(ctx.Request.Host())
+		value = gstrconv.B2S(ctx.Request.Host())
 
 	case config.EvalPathVar:
-		value = gotils.B2S(ctx.Request.URI().PathOriginal())
+		value = gstrconv.B2S(ctx.Request.URI().PathOriginal())
 
 	case config.EvalContentTypeVar:
-		value = gotils.B2S(ctx.Response.Header.ContentType())
+		value = gstrconv.B2S(ctx.Response.Header.ContentType())
 
 	case config.EvalStatusCodeVar:
 		value = strconv.Itoa(ctx.Response.StatusCode())
 
 	default:
 		if strings.HasPrefix(name, config.EvalReqHeaderVar) {
-			value = gotils.B2S(ctx.Request.Header.Peek(key))
+			value = gstrconv.B2S(ctx.Request.Header.Peek(key))
 
 		} else if strings.HasPrefix(name, config.EvalRespHeaderVar) {
-			value = gotils.B2S(ctx.Response.Header.Peek(key))
+			value = gstrconv.B2S(ctx.Response.Header.Peek(key))
 
 		} else if strings.HasPrefix(name, config.EvalCookieVar) {
-			value = gotils.B2S(ctx.Request.Header.Cookie(key))
+			value = gstrconv.B2S(ctx.Request.Header.Cookie(key))
 		}
 	}
 

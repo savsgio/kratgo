@@ -4,9 +4,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/savsgio/kratgo/modules/cache"
-
 	logger "github.com/savsgio/go-logger/v2"
+	"github.com/savsgio/kratgo/modules/cache"
 )
 
 // New ...

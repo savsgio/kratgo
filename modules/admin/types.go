@@ -3,12 +3,11 @@ package admin
 import (
 	"io"
 
+	"github.com/savsgio/atreugo/v11"
+	logger "github.com/savsgio/go-logger/v2"
 	"github.com/savsgio/kratgo/modules/cache"
 	"github.com/savsgio/kratgo/modules/config"
 	"github.com/savsgio/kratgo/modules/invalidator"
-
-	"github.com/savsgio/atreugo/v11"
-	logger "github.com/savsgio/go-logger/v2"
 )
 
 // Config ...
@@ -48,5 +47,4 @@ type Invalidator interface {
 type Server interface {
 	ListenAndServe() error
 	Path(httpMethod string, url string, viewFn atreugo.View) *atreugo.Path
-	SetLogOutput(output io.Writer)
 }

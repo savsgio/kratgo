@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/savsgio/kratgo/modules/config"
-
 	"github.com/valyala/fasthttp"
 )
 

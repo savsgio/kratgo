@@ -12,11 +12,10 @@ import (
 	"testing"
 	"time"
 
+	logger "github.com/savsgio/go-logger/v2"
+	"github.com/savsgio/gotils/strconv"
 	"github.com/savsgio/kratgo/modules/cache"
 	"github.com/savsgio/kratgo/modules/config"
-
-	logger "github.com/savsgio/go-logger/v2"
-	"github.com/savsgio/gotils"
 	"github.com/valyala/fasthttp"
 )
 
@@ -43,7 +42,7 @@ func (mock *mockBackend) Do(req *fasthttp.Request, resp *fasthttp.Response) erro
 	resp.SetStatusCode(mock.statusCode)
 
 	for k, v := range mock.headers {
-		resp.Header.SetCanonical(gotils.S2B(k), v)
+		resp.Header.SetCanonical(strconv.S2B(k), v)
 	}
 
 	return mock.err

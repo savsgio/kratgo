@@ -74,7 +74,7 @@ func TestEncodeDecodeEntry(t *testing.T) {
 
 	m := v.Msgsize()
 	if buf.Len() > m {
-		t.Logf("WARNING: Msgsize() for %v is inaccurate", v)
+		t.Log("WARNING: TestEncodeDecodeEntry Msgsize() is inaccurate")
 	}
 
 	vn := Entry{}
@@ -187,7 +187,7 @@ func TestEncodeDecodeResponse(t *testing.T) {
 
 	m := v.Msgsize()
 	if buf.Len() > m {
-		t.Logf("WARNING: Msgsize() for %v is inaccurate", v)
+		t.Log("WARNING: TestEncodeDecodeResponse Msgsize() is inaccurate")
 	}
 
 	vn := Response{}
@@ -300,7 +300,7 @@ func TestEncodeDecodeResponseHeader(t *testing.T) {
 
 	m := v.Msgsize()
 	if buf.Len() > m {
-		t.Logf("WARNING: Msgsize() for %v is inaccurate", v)
+		t.Log("WARNING: TestEncodeDecodeResponseHeader Msgsize() is inaccurate")
 	}
 
 	vn := ResponseHeader{}
