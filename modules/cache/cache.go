@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/allegro/bigcache/v2"
+	"github.com/allegro/bigcache/v3"
 	logger "github.com/savsgio/go-logger/v2"
 	"github.com/savsgio/gotils/strconv"
 	"github.com/savsgio/kratgo/modules/config"
