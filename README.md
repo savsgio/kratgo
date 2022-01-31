@@ -1,7 +1,7 @@
 Kratgo
 ======
 
-[![Build Status](https://travis-ci.org/savsgio/kratgo.svg?branch=master)](https://travis-ci.org/savsgio/kratgo)
+[![Test status](https://github.com/savsgio/kratgo/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/savsgio/kratgo/actions?workflow=test)
 [![Go Report Card](https://goreportcard.com/badge/github.com/savsgio/kratgo)](https://goreportcard.com/report/github.com/savsgio/kratgo)
 [![GitHub release](https://img.shields.io/github/release/savsgio/kratgo.svg)](https://github.com/savsgio/kratgo/releases)
 [![Docker](https://img.shields.io/docker/automated/savsgio/kratgo.svg?colorB=blue&style=flat)](https://hub.docker.com/r/savsgio/kratgo)
