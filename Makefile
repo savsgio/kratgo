@@ -13,7 +13,7 @@ CMD_DIR = ./cmd
 CONFIG_DIR = ./config/
 
 # Get version constant
-VERSION := 1.1.8
+VERSION := 1.1.9
 BUILD := $(shell git rev-parse HEAD)
 
 # Use linker flags to provide version/build settings to the binary
