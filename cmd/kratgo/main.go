@@ -23,8 +23,8 @@ func init() {
 	if showVersion {
 		fmt.Println("Kratgo:")
 		fmt.Printf("  Version: %s\n", version)
-		fmt.Printf("  Build: %s\n\n", build)
-		fmt.Printf("Go version: %s\n", runtime.Version())
+		fmt.Printf("  Build: %s\n", build)
+		fmt.Printf("  Runtime: %s\n", runtime.Version())
 		os.Exit(0)
 	}
 }
