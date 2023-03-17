@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/allegro/bigcache/v3"
+	"github.com/savsgio/go-logger/v4"
 	"github.com/savsgio/kratgo/modules/config"
 )
 
@@ -11,7 +12,7 @@ import (
 type Config struct {
 	FileConfig config.Cache
 
-	LogLevel  string
+	LogLevel  logger.Level
 	LogOutput io.Writer
 }
 

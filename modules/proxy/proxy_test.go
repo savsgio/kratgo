@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	logger "github.com/savsgio/go-logger/v2"
+	logger "github.com/savsgio/go-logger/v4"
 	"github.com/savsgio/gotils/strconv"
 	"github.com/savsgio/kratgo/modules/cache"
 	"github.com/savsgio/kratgo/modules/config"

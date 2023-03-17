@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/allegro/bigcache/v3"
-	logger "github.com/savsgio/go-logger/v2"
+	logger "github.com/savsgio/go-logger/v4"
 	"github.com/savsgio/gotils/strconv"
 	"github.com/savsgio/kratgo/modules/config"
 )
@@ -31,7 +31,7 @@ func New(cfg Config) (*Cache, error) {
 	c := new(Cache)
 	c.fileConfig = cfg.FileConfig
 
-	log := logger.New("kratgo-cache", cfg.LogLevel, cfg.LogOutput)
+	log := logger.New(cfg.LogLevel, cfg.LogOutput, logger.Field{Key: "type", Value: "cache"})
 
 	bigcacheCFG := bigcacheConfig(c.fileConfig)
 	bigcacheCFG.Logger = log

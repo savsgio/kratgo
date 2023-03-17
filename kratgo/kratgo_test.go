@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	logger "github.com/savsgio/go-logger/v2"
+	logger "github.com/savsgio/go-logger/v4"
 	"github.com/savsgio/kratgo/modules/config"
 )
 
@@ -35,7 +35,7 @@ func TestKratgo_New(t *testing.T) {
 	}
 
 	logFileName := "/tmp/test_kratgo.log"
-	logLevel := logger.FATAL
+	logLevel := logger.FATAL.String()
 
 	cfgAdmin := config.Admin{
 		Addr: "localhost:9999",

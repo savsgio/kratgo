@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/savsgio/atreugo/v11"
-	logger "github.com/savsgio/go-logger/v2"
+	logger "github.com/savsgio/go-logger/v4"
 	"github.com/savsgio/kratgo/modules/cache"
 	"github.com/savsgio/kratgo/modules/config"
 	"github.com/savsgio/kratgo/modules/invalidator"
@@ -18,7 +18,7 @@ type Config struct {
 
 	HTTPScheme string
 
-	LogLevel  string
+	LogLevel  logger.Level
 	LogOutput io.Writer
 }
 

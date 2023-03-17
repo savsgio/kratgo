@@ -11,9 +11,7 @@ func (a *Admin) invalidateView(ctx *atreugo.RequestCtx) error {
 	entry := invalidator.AcquireEntry()
 	body := ctx.PostBody()
 
-	if a.log.DebugEnabled() {
-		a.log.Debugf("Invalidation received: %s", body)
-	}
+	a.log.Debugf("Invalidation received: %s", body)
 
 	err := json.Unmarshal(body, entry)
 	if err != nil {

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"sync"
 
-	logger "github.com/savsgio/go-logger/v2"
+	logger "github.com/savsgio/go-logger/v4"
 	"github.com/savsgio/govaluate/v3"
 	"github.com/savsgio/kratgo/modules/cache"
 	"github.com/savsgio/kratgo/modules/config"
@@ -21,7 +21,7 @@ func New(cfg Config) (*Proxy, error) {
 	p := new(Proxy)
 	p.fileConfig = cfg.FileConfig
 
-	log := logger.New("kratgo", cfg.LogLevel, cfg.LogOutput)
+	log := logger.New(cfg.LogLevel, cfg.LogOutput, logger.Field{Key: "type", Value: "proxy"})
 
 	p.server = &fasthttp.Server{
 		Handler: p.handler,
@@ -177,9 +177,7 @@ func (p *Proxy) saveBackendResponse(cacheKey, path []byte, resp *fasthttp.Respon
 }
 
 func (p *Proxy) fetchFromBackend(cacheKey, path []byte, ctx *fasthttp.RequestCtx, pt *proxyTools) error {
-	if p.log.DebugEnabled() {
-		p.log.Debugf("%s - %s", ctx.Method(), ctx.Path())
-	}
+	p.log.Debugf("%s - %s", ctx.Method(), ctx.Path())
 
 	ctx.Request.Header.Set(proxyReqHeaderKey, proxyReqHeaderValue)
 	for _, header := range hopHeaders {

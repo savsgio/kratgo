@@ -2,7 +2,7 @@ package admin
 
 import (
 	"github.com/savsgio/atreugo/v11"
-	logger "github.com/savsgio/go-logger/v2"
+	logger "github.com/savsgio/go-logger/v4"
 )
 
 // New ...
@@ -10,8 +10,7 @@ func New(cfg Config) (*Admin, error) {
 	a := new(Admin)
 	a.fileConfig = cfg.FileConfig
 
-	logName := "kratgo-admin"
-	log := logger.New(logName, cfg.LogLevel, cfg.LogOutput)
+	log := logger.New(cfg.LogLevel, cfg.LogOutput, logger.Field{Key: "type", Value: "admin"})
 
 	a.server = atreugo.New(atreugo.Config{
 		Addr:   cfg.FileConfig.Addr,

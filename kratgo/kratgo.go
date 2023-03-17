@@ -1,6 +1,7 @@
 package kratgo
 
 import (
+	"github.com/savsgio/go-logger/v4"
 	"github.com/savsgio/kratgo/modules/admin"
 	"github.com/savsgio/kratgo/modules/cache"
 	"github.com/savsgio/kratgo/modules/config"
@@ -12,6 +13,11 @@ import (
 func New(cfg config.Config) (*Kratgo, error) {
 	k := new(Kratgo)
 
+	logLevel, err := logger.ParseLevel(cfg.LogLevel)
+	if err != nil {
+		return nil, err
+	}
+
 	logFile, err := getLogOutput(cfg.LogOutput)
 	if err != nil {
 		return nil, err
@@ -20,7 +26,7 @@ func New(cfg config.Config) (*Kratgo, error) {
 
 	c, err := cache.New(cache.Config{
 		FileConfig: cfg.Cache,
-		LogLevel:   cfg.LogLevel,
+		LogLevel:   logLevel,
 		LogOutput:  logFile,
 	})
 	if err != nil {
@@ -31,7 +37,7 @@ func New(cfg config.Config) (*Kratgo, error) {
 		FileConfig: cfg.Proxy,
 		Cache:      c,
 		HTTPScheme: defaultHTTPScheme,
-		LogLevel:   cfg.LogLevel,
+		LogLevel:   logLevel,
 		LogOutput:  logFile,
 	}); err != nil {
 		return nil, err
@@ -40,7 +46,7 @@ func New(cfg config.Config) (*Kratgo, error) {
 	i, err := invalidator.New(invalidator.Config{
 		FileConfig: cfg.Invalidator,
 		Cache:      c,
-		LogLevel:   cfg.LogLevel,
+		LogLevel:   logLevel,
 		LogOutput:  logFile,
 	})
 	if err != nil {
@@ -52,7 +58,7 @@ func New(cfg config.Config) (*Kratgo, error) {
 		Cache:       c,
 		Invalidator: i,
 		HTTPScheme:  defaultHTTPScheme,
-		LogLevel:    cfg.LogLevel,
+		LogLevel:    logLevel,
 		LogOutput:   logFile,
 	}); err != nil {
 		return nil, err

@@ -3,7 +3,7 @@ package invalidator
 import (
 	"io"
 
-	logger "github.com/savsgio/go-logger/v2"
+	logger "github.com/savsgio/go-logger/v4"
 	"github.com/savsgio/kratgo/modules/cache"
 	"github.com/savsgio/kratgo/modules/config"
 )
@@ -13,7 +13,7 @@ type Config struct {
 	FileConfig config.Invalidator
 	Cache      *cache.Cache
 
-	LogLevel  string
+	LogLevel  logger.Level
 	LogOutput io.Writer
 }
 

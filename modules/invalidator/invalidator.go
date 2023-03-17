@@ -4,7 +4,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	logger "github.com/savsgio/go-logger/v2"
+	logger "github.com/savsgio/go-logger/v4"
 	"github.com/savsgio/kratgo/modules/cache"
 )
 
@@ -14,7 +14,7 @@ func New(cfg Config) (*Invalidator, error) {
 		return nil, ErrMaxWorkersZero
 	}
 
-	log := logger.New("kratgo-invalidator", cfg.LogLevel, cfg.LogOutput)
+	log := logger.New(cfg.LogLevel, cfg.LogOutput, logger.Field{Key: "type", Value: "invalidator"})
 
 	i := &Invalidator{
 		fileConfig: cfg.FileConfig,
