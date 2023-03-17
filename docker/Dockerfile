@@ -19,7 +19,7 @@ RUN make
 
 FROM alpine:3.17
 
-LABEL Author="Sergio Andres Virviescas Santana <savsgio.engineer@gmail.com>"
+LABEL Author="Sergio Andres Virviescas Santana <savsgio.engineer@proton.me>"
 
 COPY --from=builder /usr/src/kratgo/ /kratgo
 
