@@ -2,7 +2,7 @@
 ### BUILDER ###
 ###############
 
-FROM golang:1.17-alpine3.15 as builder
+FROM golang:1.20-alpine3.17 as builder
 
 RUN apk add git build-base
 
@@ -17,7 +17,7 @@ RUN make
 ### RELEASE ###
 ###############
 
-FROM alpine:3.15
+FROM alpine:3.17
 
 LABEL Author="Sergio Andres Virviescas Santana <savsgio.engineer@gmail.com>"
 
