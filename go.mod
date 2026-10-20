@@ -1,6 +1,6 @@
 module github.com/savsgio/kratgo
 
-go 1.20
+go 1.24
 
 require (
 	github.com/allegro/bigcache/v3 v3.1.0
@@ -16,7 +16,7 @@ require (
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/fasthttp/router v1.4.18 // indirect
-	github.com/klauspost/compress v1.16.3 // indirect
+	github.com/klauspost/compress v1.18.7 // indirect
 	github.com/philhofer/fwd v1.1.2 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
